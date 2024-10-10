@@ -1,0 +1,72 @@
+"""
+URL configuration for backend project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/5.0/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from booking.views import BookingViewSet,BookingTransferViewSet
+from django.urls import path
+from app import views
+from django.conf import settings
+from django.conf.urls.static import static
+from contact.views import ContactView
+from home.views import BackgroundVideoListView,CardOneListView,CardTwoListView
+from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView, TourBookingView
+from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
+from driver.views import AuthViewSet
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+router = DefaultRouter()
+router.register(r'bookings', BookingViewSet)
+router.register(r'bookings-transfer', BookingTransferViewSet)
+router.register('auth', AuthViewSet, basename='auth')
+
+
+urlpatterns = [
+    path('api/', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('admin/', admin.site.urls),
+    path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
+    path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
+
+    path('contact/',  ContactView.as_view(), name='contact'),
+
+    path('statistics/', StatisticListCreateAPIView.as_view(), name='statistic-list'),
+    path('activities/', ActivityListCreateAPIView.as_view(), name='activity-list'),
+    path('about-description/', DescriptionDetailView.as_view(), name='about-description'),
+    path('tours/', ToursListView.as_view(), name='tours-list'),
+    path('tours/<int:id>/', ToursAndActivitiesDetailView.as_view(), name='tour-detail'),
+
+    path('top-activities/', TopActivitiesListView.as_view(), name='top-activities-list'),
+
+    path('background-video/', BackgroundVideoListView.as_view(), name='background_video_list'),
+    path('card-one/', CardOneListView.as_view(), name='card_one_list'),
+    path('card-two/', CardTwoListView.as_view(), name='card_two_list'),
+
+    path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
+
+
+
+
+
+]
+
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
