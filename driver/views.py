@@ -15,16 +15,15 @@ from booking.serializers import DriverTransferBookingSerializer
 from .serializers import BannerSerializer,DriverFeedbackSerializer
 import logging
 from django.db import connection
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.views.decorators.csrf import csrf_exempt
+
 
 logger = logging.getLogger(__name__)
 
+
 User = get_user_model()
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([AllowAny])
+@csrf_exempt
 class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def register(self, request):
