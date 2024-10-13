@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import DriverFeedback,Banner
+from .models import DriverFeedback,Banner,User
 
 @admin.register(DriverFeedback)
 class DriverFeedbackAdmin(admin.ModelAdmin):
@@ -20,5 +20,6 @@ class DriverFeedbackAdmin(admin.ModelAdmin):
             return 'Yes'
         return 'No'
     get_image.short_description = 'Has Image'
-    
+
 admin.site.register(Banner)
+admin.site.register(User)
