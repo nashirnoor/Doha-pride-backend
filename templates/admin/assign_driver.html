@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <p>Select a driver to assign to the selected booking(s):</p>
+    <select name="driver">
+        {% for driver in drivers %}
+            <option value="{{ driver.id }}">{{ driver.username }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Assign Driver" />
+</form>
+{% endblock %}

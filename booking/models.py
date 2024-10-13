@@ -4,8 +4,10 @@ from ToursAndActivities.models import ToursAndActivities
 from django.core.mail import send_mail
 from django.conf import settings
 from app.models import TransferMeetAssist
+from django.contrib.auth import get_user_model
 
-class Booking(models.Model):
+
+class TourBooking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
@@ -48,8 +50,12 @@ class TransferBooking(models.Model):
     number = models.CharField(max_length=20)
     date = models.DateField()
     time = models.TimeField()
+    from_location = models.CharField(max_length=255, blank=True, null=True)
+    to_location = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(blank=True, null=True)
+    driver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='transfer_bookings')
+
 
     def __str__(self):
         return f"{self.name}"

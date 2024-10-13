@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Booking,TransferBooking
+from .models import TourBooking,TransferBooking
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Booking
+        model = TourBooking
         fields = ['id', 'name', 'email', 'number', 'date', 'time', 'status','tour_activity']
         read_only_fields = ['status']
 
@@ -11,5 +11,11 @@ class BookingSerializer(serializers.ModelSerializer):
 class TransferBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransferBooking
-        fields = ['id', 'name', 'email', 'number', 'date', 'time', 'status','transfer_name']
+        fields = ['id', 'name', 'email', 'number', 'date', 'time', 'status','transfer_name', 'from_location', 'to_location','driver']
         read_only_fields = ['status']
+
+
+class DriverTransferBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TransferBooking
+        fields = ['id', 'name', 'email', 'number', 'date', 'time', 'from_location', 'to_location', 'status']

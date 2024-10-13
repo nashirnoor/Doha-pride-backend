@@ -22,6 +22,4 @@ class TransferMeetAssistAdmin(admin.ModelAdmin):
 
 admin.site.register(Point)
 
-
-# admin.site.unregister(User)
 admin.site.unregister(Group)
