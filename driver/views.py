@@ -21,9 +21,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 logger = logging.getLogger(__name__)
 
-
 User = get_user_model()
-@api_view(['POST'])
+
 @authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
 class AuthViewSet(viewsets.GenericViewSet):
