@@ -47,17 +47,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
     path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
-
     path('contact/',  ContactView.as_view(), name='contact'),
-
     path('statistics/', StatisticListCreateAPIView.as_view(), name='statistic-list'),
     path('activities/', ActivityListCreateAPIView.as_view(), name='activity-list'),
     path('about-description/', DescriptionDetailView.as_view(), name='about-description'),
     path('tours/', ToursListView.as_view(), name='tours-list'),
     path('tours/<int:id>/', ToursAndActivitiesDetailView.as_view(), name='tour-detail'),
-
     path('top-activities/', TopActivitiesListView.as_view(), name='top-activities-list'),
-
     path('background-video/', BackgroundVideoListView.as_view(), name='background_video_list'),
     path('card-one/', CardOneListView.as_view(), name='card_one_list'),
     path('card-two/', CardTwoListView.as_view(), name='card_two_list'),
