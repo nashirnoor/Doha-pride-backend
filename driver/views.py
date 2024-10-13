@@ -16,6 +16,7 @@ from .serializers import BannerSerializer,DriverFeedbackSerializer
 import logging
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
 
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([AllowAny])
 class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def register(self, request):
