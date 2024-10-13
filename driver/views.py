@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-@csrf_exempt
 class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def register(self, request):
