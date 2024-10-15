@@ -17,17 +17,15 @@ import logging
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 logger = logging.getLogger(__name__)
 
 
 User = get_user_model()
-
-
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 @authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
@@ -74,30 +72,25 @@ class AuthViewSet(viewsets.GenericViewSet):
     def user(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'])
-    def driver_bookings(self, request):        
+    def driver_bookings(self, request):
         if not request.user.is_authenticated:
-            print("User is not authenticated")
             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-        print(f"User authenticated: {request.user.username} (ID: {request.user.id}, Email: {request.user.email})")
+        
+        if request.user.user_type != 'driver':
+            return Response({'error': 'Only drivers can access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+
         today = timezone.now().date()
         try:
             bookings = TransferBooking.objects.filter(
                 driver=request.user,
                 date=today
-            )            
-            print(f"Number of bookings found: {bookings.count()}")
-            for booking in bookings:
-                print(f"Booking ID: {booking.id}, Date: {booking.date}, Driver: {booking.driver}")
-
+            )
             serializer = DriverTransferBookingSerializer(bookings, many=True)
             return Response(serializer.data)
-
         except Exception as e:
-            print(f"Error in driver_bookings: {str(e)}")
             return Response({'error': 'An error occurred while fetching bookings'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
 
 class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all()
