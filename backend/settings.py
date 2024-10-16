@@ -106,6 +106,8 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     "default": dj_database_url.parse('postgresql://doha_pride_user:BClCmdTDO3qU4iVA7p4WgeJQIZfJbaJE@dpg-cs75q5a3esus73cgrlog-a.singapore-postgres.render.com/doha_pride')
 }
+from urllib.parse import urlparse
+redis_url = urlparse('redis://red-cs7q5uo8fa8c73cleufg:6379')
 
 ASGI_APPLICATION = 'backend.asgi.application'
 
@@ -113,7 +115,7 @@ CHANNELS_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG':{
-            'hosts': [('127.0.0.1', 6379)]
+            'hosts': [(redis_url.hostname, 6379)]
         }
     }
 }

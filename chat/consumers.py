@@ -5,16 +5,18 @@ import json
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         user = self.scope['user']
-        print(user,user.is_authenticated)
+        print(user, user.is_authenticated)
         if not user.is_authenticated:
             return
         self.username = user.username
-        async_to_sync(self.channel_layer.group_add)(
-            self.username, self.channel_name
-        )
+        if self.channel_layer is not None:
+            async_to_sync(self.channel_layer.group_add)(
+                self.username, self.channel_name
+            )
         self.accept()
 
     def disconnect(self, close_code):
+      if self.channel_layer is not None:
         async_to_sync(self.channel_layer.group_discard)(
             self.username, self.channel_name
         )
