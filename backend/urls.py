@@ -43,8 +43,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    path('admin/', admin.site.urls),
+    path('admin', admin.site.urls),
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
     path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
     path('contact/',  ContactView.as_view(), name='contact'),

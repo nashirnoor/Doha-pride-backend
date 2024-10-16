@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,7 +56,8 @@ INSTALLED_APPS = [
     'ToursAndActivities',
     'home',
     'booking',
-    'driver'
+    'driver',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -105,6 +107,16 @@ DATABASES = {
     "default": dj_database_url.parse('postgresql://doha_pride_user:BClCmdTDO3qU4iVA7p4WgeJQIZfJbaJE@dpg-cs75q5a3esus73cgrlog-a.singapore-postgres.render.com/doha_pride')
 }
 
+ASGI_APPLICATION = 'backend.asgi.application'
+
+CHANNELS_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG':{
+            'hosts': [('127.0.0.1', 6379)]
+        }
+    }
+}
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
