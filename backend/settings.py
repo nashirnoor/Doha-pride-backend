@@ -106,17 +106,23 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     "default": dj_database_url.parse('postgresql://doha_pride_user:BClCmdTDO3qU4iVA7p4WgeJQIZfJbaJE@dpg-cs75q5a3esus73cgrlog-a.singapore-postgres.render.com/doha_pride')
 }
+import os
 from urllib.parse import urlparse
-redis_url = urlparse('redis://red-cs7q5uo8fa8c73cleufg:6379')
+
+# Get Redis URL from environment variable
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://red-cs7q5uo8fa8c73cleufg:6379')
+
+# Parse the Redis URL
+redis_url = urlparse(REDIS_URL)
 
 ASGI_APPLICATION = 'backend.asgi.application'
 
-CHANNELS_LAYERS = {
+CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG':{
-            'hosts': [(redis_url.hostname, 6379)]
-        }
+        'CONFIG': {
+            'hosts': [f'{REDIS_URL}'],  # Use the complete Redis URL
+        },
     }
 }
 # DATABASES = {
