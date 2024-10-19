@@ -37,7 +37,6 @@ class TourBooking(models.Model):
         recipient_list = [self.email]
         send_mail(subject, message, from_email, recipient_list)
 
-
 class TransferBooking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
