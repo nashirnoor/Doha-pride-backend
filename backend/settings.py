@@ -238,6 +238,10 @@ cloudinary.config(
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",  # Your frontend URL
+]
+
 
 CSRF_COOKIE_SECURE = False
 
