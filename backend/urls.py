@@ -37,8 +37,6 @@ router.register('banners', BannerViewSet)
 router.register('driver-feedback', DriverFeedbackViewSet)
 
 
-
-
 urlpatterns = [
     path('api/', include(router.urls)),
     path('',include('chat.urls')),
@@ -57,12 +55,7 @@ urlpatterns = [
     path('background-video/', BackgroundVideoListView.as_view(), name='background_video_list'),
     path('card-one/', CardOneListView.as_view(), name='card_one_list'),
     path('card-two/', CardTwoListView.as_view(), name='card_two_list'),
-
     path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
-
-
-
-
 
 ]
 
