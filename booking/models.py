@@ -79,7 +79,7 @@ class TransferBooking(models.Model):
         """Generates a unique 5-digit random number."""
         code = random.randint(1000, 99999)
         while TransferBooking.objects.filter(unique_code=code).exists():
-            code = random.randint(10000, 99999)
+            code = random.randint(1000, 99999)
         return str(code)
     
 
