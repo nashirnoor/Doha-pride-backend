@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from app.models import TransferMeetAssist
 from django.contrib.auth import get_user_model
-import uuid
+import random
 
 
 class TourBooking(models.Model):
@@ -62,15 +62,26 @@ class TransferBooking(models.Model):
     room_no = models.CharField(max_length=50, blank=True, null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
-    unique_code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,null=True)
+    unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.unique_code}"
 
     def save(self, *args, **kwargs):
+        if not self.unique_code:
+            self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:
             self.send_rejection_email()
         super().save(*args, **kwargs)
+
+    
+    def generate_unique_code(self):
+        """Generates a unique 5-digit random number."""
+        code = random.randint(1000, 99999)
+        while TransferBooking.objects.filter(unique_code=code).exists():
+            code = random.randint(10000, 99999)
+        return str(code)
+    
 
     def send_rejection_email(self):
         subject = 'Booking Rejected'
