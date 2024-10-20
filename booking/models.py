@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from app.models import TransferMeetAssist
 from django.contrib.auth import get_user_model
+import uuid
 
 
 class TourBooking(models.Model):
@@ -43,21 +44,28 @@ class TransferBooking(models.Model):
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
     )
-    transfer_name = models.ForeignKey(TransferMeetAssist, on_delete=models.CASCADE,null=True,blank=True)
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    number = models.CharField(max_length=20)
-    date = models.DateField()
-    time = models.TimeField()
+    transfer_name = models.ForeignKey(TransferMeetAssist, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=100,null=True,blank=True)
+    email = models.EmailField(null=True,blank=True)
+    number = models.CharField(max_length=20,null=True,blank=True)
+    date = models.DateField(null=True,blank=True)
+    time = models.TimeField(null=True,blank=True)
     from_location = models.CharField(max_length=255, blank=True, null=True)
     to_location = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(blank=True, null=True)
     driver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='transfer_bookings')
-
+    # New fields
+    hotel_name = models.CharField(max_length=255, blank=True, null=True)
+    vehicle = models.CharField(max_length=100, blank=True, null=True)
+    flight = models.CharField(max_length=100, blank=True, null=True)
+    room_no = models.CharField(max_length=50, blank=True, null=True)
+    voucher_no = models.CharField(max_length=100, blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
+    unique_code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,null=True)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - {self.unique_code}"
 
     def save(self, *args, **kwargs):
         if self.status == 'rejected' and self.rejection_reason:
@@ -70,8 +78,3 @@ class TransferBooking(models.Model):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [self.email]
         send_mail(subject, message, from_email, recipient_list)
-
-
-
-
-
