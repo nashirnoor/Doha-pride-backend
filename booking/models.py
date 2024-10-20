@@ -10,9 +10,10 @@ import random
 
 class TourBooking(models.Model):
     STATUS_CHOICES = (
+        ('done', 'Done'),
         ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
+        ('posted', 'Posted'),
+        ('cancelled', 'Cancelled'),
     )
     tour_activity = models.ForeignKey(ToursAndActivities, on_delete=models.CASCADE,null=True,blank=True)
     name = models.CharField(max_length=100)
