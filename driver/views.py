@@ -14,6 +14,8 @@ from booking.models import TransferBooking
 from booking.serializers import DriverTransferBookingSerializer
 from .serializers import BannerSerializer,DriverFeedbackSerializer
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
@@ -29,6 +31,7 @@ User = get_user_model()
 
 @authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
+@method_decorator(csrf_exempt, name='dispatch')
 class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def register(self, request):
