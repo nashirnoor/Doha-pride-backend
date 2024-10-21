@@ -49,7 +49,7 @@ class ChatConsumer(WebsocketConsumer):
             chat_room=chat_room,
             sender=sender,
             receiver=receiver,
-            content_type=data['contentType'],
+            content_type=data['content_type'],
             content=data['content'],
             sub_content=data.get('subContent'),
             is_reply=data.get('isReply', False),

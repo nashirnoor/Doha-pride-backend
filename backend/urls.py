@@ -26,12 +26,13 @@ from contact.views import ContactView
 from home.views import BackgroundVideoListView,CardOneListView,CardTwoListView
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView, TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
-from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet
+from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'bookings', BookingViewSet)
 router.register(r'bookings-transfer', BookingTransferViewSet,basename='booking-transfer')
+router.register(r'drivers', DriverViewSet, basename='drivers')
 router.register('auth', AuthViewSet, basename='auth')
 router.register('banners', BannerViewSet)
 router.register('driver-feedback', DriverFeedbackViewSet)
