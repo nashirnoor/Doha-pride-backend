@@ -41,9 +41,10 @@ class TourBooking(models.Model):
 
 class TransferBooking(models.Model):
     STATUS_CHOICES = (
+        ('done', 'Done'),
         ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
+        ('posted', 'Posted'),
+        ('cancelled', 'Cancelled'),
     )
     transfer_name = models.ForeignKey(TransferMeetAssist, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100,null=True,blank=True)

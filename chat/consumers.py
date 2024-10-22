@@ -81,14 +81,6 @@ class ChatConsumer(WebsocketConsumer):
                 message = async_to_sync(self.save_message)(data, chat_room)
                 serialized_message = MessageSerializer(message).data
 
-                # async_to_sync(self.channel_layer.group_send)(
-                #     self.username,
-                #     {
-                #         'type': 'chat_message',
-                #         'message': serialized_message
-                #     }
-                # )
-
                 async_to_sync(self.channel_layer.group_send)(
                     message.receiver.username,
                     {

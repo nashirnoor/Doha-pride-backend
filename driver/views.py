@@ -94,6 +94,35 @@ class AuthViewSet(viewsets.GenericViewSet):
             return Response(serializer.data)
         except Exception as e:
             return Response({'error': 'An error occurred while fetching bookings'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['get'])
+    def completed_bookings(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        if request.user.user_type != 'driver':
+            return Response(
+                {'error': 'Only drivers can access this endpoint'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            bookings = TransferBooking.objects.filter(
+                driver=request.user,
+                status='done'  # Filter for completed bookings
+            ).order_by('-date')  # Most recent first
+            
+            serializer = DriverTransferBookingSerializer(bookings, many=True)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'An error occurred while fetching completed bookings'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all()
