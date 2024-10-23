@@ -6,10 +6,19 @@ User = get_user_model()
 class ChatRoom(models.Model):
     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_chats')
     customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer_chats')
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin_chats', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('driver', 'customer')
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(customer__isnull=False, admin__isnull=True) |
+                    models.Q(customer__isnull=True, admin__isnull=False)
+                ),
+                name='either_customer_or_admin'
+            )
+        ]
 
 class Message(models.Model):
     CONTENT_TYPES = (

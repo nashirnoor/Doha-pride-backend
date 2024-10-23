@@ -35,6 +35,16 @@ class ChatConsumer(WebsocketConsumer):
             customer=customer
         )
         return chat_room
+    @database_sync_to_async
+    def get_or_create_admin_driver_chat(self, driver_id, admin_id):
+        driver = User.objects.get(id=driver_id)
+        admin = User.objects.get(id=admin_id)
+        chat_room, created = ChatRoom.objects.get_or_create(
+            driver=driver,
+            admin=admin,
+            customer=None
+        )
+        return chat_room
 
     @database_sync_to_async
     def save_message(self, data, chat_room):
@@ -67,17 +77,24 @@ class ChatConsumer(WebsocketConsumer):
         try:
             data = json.loads(text_data)
             source = data.get('source')
-            print(f"Received data: {data}")  # For debugging
+            print(f"Received data: {data}")  
 
             if source == 'chat':
-                if 'driver_id' not in data or 'customer_id' not in data:
-                    raise ValueError("Missing required fields: driver_id and customer_id")
+                if 'driver_id' in data and 'admin_id' in data:
+                    # Admin-Driver chat
+                    chat_room = async_to_sync(self.get_or_create_admin_driver_chat)(
+                        data['driver_id'],
+                        data['admin_id']
+                    )
+                elif 'driver_id' in data and 'customer_id' in data:
+                    # Customer-Driver chat
+                    chat_room = async_to_sync(self.get_or_create_chat_room)(
+                        data['driver_id'],
+                        data['customer_id']
+                    )
+                else:
+                    raise ValueError("Missing required fields")
 
-                chat_room = async_to_sync(self.get_or_create_chat_room)(
-                    data['driver_id'],
-                    data['customer_id']
-                )
-                
                 message = async_to_sync(self.save_message)(data, chat_room)
                 serialized_message = MessageSerializer(message).data
 
