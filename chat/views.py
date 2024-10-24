@@ -30,7 +30,7 @@ class ChatRoomMessagesView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        other_user_id = self.kwargs['pk']  # This could be either driver_id or customer_id
+        other_user_id = self.kwargs['pk']  
         current_user = self.request.user
 
         chat_room = ChatRoom.objects.filter(

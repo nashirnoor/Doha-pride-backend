@@ -7,7 +7,6 @@ from .serializers import MessageSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         user = self.scope['user']
@@ -35,26 +34,15 @@ class ChatConsumer(WebsocketConsumer):
             customer=customer
         )
         return chat_room
-    @database_sync_to_async
-    def get_or_create_admin_driver_chat(self, driver_id, admin_id):
-        driver = User.objects.get(id=driver_id)
-        admin = User.objects.get(id=admin_id)
-        chat_room, created = ChatRoom.objects.get_or_create(
-            driver=driver,
-            admin=admin,
-            customer=None
-        )
-        return chat_room
 
     @database_sync_to_async
     def save_message(self, data, chat_room):
         sender = User.objects.get(username=self.username)
-        # Determine receiver based on sender's type and chat room
         if sender.user_type == 'driver':
             receiver = chat_room.customer
         else:
             receiver = chat_room.driver
-        
+
         message = Message.objects.create(
             chat_room=chat_room,
             sender=sender,
@@ -65,12 +53,12 @@ class ChatConsumer(WebsocketConsumer):
             is_reply=data.get('isReply', False),
             status='unread'
         )
-        
+
         if data.get('isReply') and data.get('repliedMessage'):
             replied_msg = Message.objects.get(id=data['repliedMessage'])
             message.replied_message = replied_msg
             message.save()
-            
+
         return message
 
     def receive(self, text_data):
@@ -80,20 +68,13 @@ class ChatConsumer(WebsocketConsumer):
             print(f"Received data: {data}")  
 
             if source == 'chat':
-                if 'driver_id' in data and 'admin_id' in data:
-                    # Admin-Driver chat
-                    chat_room = async_to_sync(self.get_or_create_admin_driver_chat)(
-                        data['driver_id'],
-                        data['admin_id']
-                    )
-                elif 'driver_id' in data and 'customer_id' in data:
-                    # Customer-Driver chat
-                    chat_room = async_to_sync(self.get_or_create_chat_room)(
-                        data['driver_id'],
-                        data['customer_id']
-                    )
-                else:
-                    raise ValueError("Missing required fields")
+                if 'driver_id' not in data or 'customer_id' not in data:
+                    raise ValueError("Missing required fields: driver_id and customer_id")
+
+                chat_room = async_to_sync(self.get_or_create_chat_room)(
+                    data['driver_id'],
+                    data['customer_id']
+                )
 
                 message = async_to_sync(self.save_message)(data, chat_room)
                 serialized_message = MessageSerializer(message).data
