@@ -249,8 +249,11 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # Your frontend URL
+    "https://doha-pride-backend-2.onrender.com",
+    "http://localhost:5173", 
+    "https://dohapride.helloanas.com/" 
 ]
+
 
 
 CSRF_COOKIE_SECURE = False
