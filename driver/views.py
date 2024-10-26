@@ -35,7 +35,7 @@ User = get_user_model()
 @permission_classes([AllowAny])
 @method_decorator(csrf_exempt, name='dispatch')
 class AuthViewSet(viewsets.GenericViewSet):
-    parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
     @action(detail=False, methods=['post'])
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -127,39 +127,39 @@ class AuthViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
-    @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
-    def update_profile_photo(self, request):
-        if request.user.user_type != 'driver':
-            raise PermissionDenied("Only drivers can update profile photos")
+    # @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
+    # def update_profile_photo(self, request):
+    #     if request.user.user_type != 'driver':
+    #         raise PermissionDenied("Only drivers can update profile photos")
         
-        serializer = UpdateProfilePhotoSerializer(request.user, data=request.data)
-        if serializer.is_valid():
-            # Delete old photo if it exists
-            if request.user.profile_photo:
-                request.user.profile_photo.delete(save=False)
+    #     serializer = UpdateProfilePhotoSerializer(request.user, data=request.data)
+    #     if serializer.is_valid():
+    #         # Delete old photo if it exists
+    #         if request.user.profile_photo:
+    #             request.user.profile_photo.delete(save=False)
             
-            serializer.save()
-            return Response({
-                'message': 'Profile photo updated successfully',
-                'user': UserSerializer(request.user).data
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         serializer.save()
+    #         return Response({
+    #             'message': 'Profile photo updated successfully',
+    #             'user': UserSerializer(request.user).data
+    #         }, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
-    def remove_profile_photo(self, request):
-        if request.user.user_type != 'driver':
-            raise PermissionDenied("Only drivers can remove profile photos")
+    # @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    # def remove_profile_photo(self, request):
+    #     if request.user.user_type != 'driver':
+    #         raise PermissionDenied("Only drivers can remove profile photos")
         
-        if request.user.profile_photo:
-            request.user.profile_photo.delete()
-            request.user.save()
-            return Response({
-                'message': 'Profile photo removed successfully',
-                'user': UserSerializer(request.user).data
-            }, status=status.HTTP_200_OK)
-        return Response({
-            'message': 'No profile photo to remove'
-        }, status=status.HTTP_400_BAD_REQUEST)
+    #     if request.user.profile_photo:
+    #         request.user.profile_photo.delete()
+    #         request.user.save()
+    #         return Response({
+    #             'message': 'Profile photo removed successfully',
+    #             'user': UserSerializer(request.user).data
+    #         }, status=status.HTTP_200_OK)
+    #     return Response({
+    #         'message': 'No profile photo to remove'
+    #     }, status=status.HTTP_400_BAD_REQUEST)
 
 class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all()
