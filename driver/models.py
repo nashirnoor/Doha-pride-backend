@@ -9,6 +9,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
         ('driver', 'Driver'),
         ('customer', 'Customer'),
+        ('staff','Staff')
     )
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
