@@ -4,8 +4,11 @@ from .models import TourBooking,TransferBooking
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourBooking
-        fields = ['id', 'name', 'email', 'number', 'date', 'time', 'status','tour_activity']
-        read_only_fields = ['status']
+        fields = ['id', 'name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code']
+        read_only_fields = ['status','unique_code']
+
+        def get_tour_service_name(self, obj):
+          return obj.tour_activity if obj.tour_activity else None
 
 class TransferBookingSerializer(serializers.ModelSerializer):
     driver_name = serializers.SerializerMethodField()
@@ -17,7 +20,7 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             'id', 'name', 'email', 'number', 'date', 'time', 'status',
             'transfer_name', 'from_location', 'to_location', 'driver',
             'driver_name', 'transfer_service_name', 'hotel_name', 'vehicle',
-            'flight', 'room_no', 'voucher_no', 'note', 'unique_code'
+            'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount'
         ]
         read_only_fields = ['status', 'unique_code']
 

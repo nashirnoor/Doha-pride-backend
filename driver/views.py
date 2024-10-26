@@ -12,20 +12,22 @@ from rest_framework import status
 from .models import Banner,DriverFeedback
 from booking.models import TransferBooking
 from booking.serializers import DriverTransferBookingSerializer
-from .serializers import BannerSerializer,DriverFeedbackSerializer
+from .serializers import BannerSerializer,DriverFeedbackSerializer,UpdateProfilePhotoSerializer
 import logging
+from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 logger = logging.getLogger(__name__)
-
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import parser_classes
 
 User = get_user_model()
 
@@ -33,6 +35,7 @@ User = get_user_model()
 @permission_classes([AllowAny])
 @method_decorator(csrf_exempt, name='dispatch')
 class AuthViewSet(viewsets.GenericViewSet):
+    parser_classes = (MultiPartParser, FormParser)
     @action(detail=False, methods=['post'])
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -123,6 +126,40 @@ class AuthViewSet(viewsets.GenericViewSet):
                 {'error': 'An error occurred while fetching completed bookings'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+    @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
+    def update_profile_photo(self, request):
+        if request.user.user_type != 'driver':
+            raise PermissionDenied("Only drivers can update profile photos")
+        
+        serializer = UpdateProfilePhotoSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            # Delete old photo if it exists
+            if request.user.profile_photo:
+                request.user.profile_photo.delete(save=False)
+            
+            serializer.save()
+            return Response({
+                'message': 'Profile photo updated successfully',
+                'user': UserSerializer(request.user).data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def remove_profile_photo(self, request):
+        if request.user.user_type != 'driver':
+            raise PermissionDenied("Only drivers can remove profile photos")
+        
+        if request.user.profile_photo:
+            request.user.profile_photo.delete()
+            request.user.save()
+            return Response({
+                'message': 'Profile photo removed successfully',
+                'user': UserSerializer(request.user).data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            'message': 'No profile photo to remove'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all()

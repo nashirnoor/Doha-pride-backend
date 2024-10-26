@@ -30,7 +30,7 @@ from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverV
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
-router.register(r'bookings', BookingViewSet)
+router.register(r'bookings-tour', BookingViewSet)
 router.register(r'bookings-transfer', BookingTransferViewSet,basename='booking-transfer')
 router.register(r'drivers', DriverViewSet, basename='drivers')
 router.register('auth', AuthViewSet, basename='auth')
