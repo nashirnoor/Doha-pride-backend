@@ -251,7 +251,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 CSRF_TRUSTED_ORIGINS = [
     "https://doha-pride-backend-2.onrender.com",
     "http://localhost:5173", 
-    "https://dohapride.helloanas.com/" 
+    "https://dohapride.helloanas.com" 
 ]
 
 
