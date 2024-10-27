@@ -6,6 +6,9 @@ from django.conf import settings
 from app.models import TransferMeetAssist
 from django.contrib.auth import get_user_model
 import random
+from threading import local
+
+_thread_locals = local()
 
 
 class TourBooking(models.Model):
@@ -94,6 +97,7 @@ class TransferBooking(models.Model):
             self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:
             self.send_rejection_email()
+        self._current_user = getattr(_thread_locals, 'user', None)
         super().save(*args, **kwargs)
 
     
@@ -111,3 +115,22 @@ class TransferBooking(models.Model):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [self.email]
         send_mail(subject, message, from_email, recipient_list)
+
+
+class TransferBookingAudit(models.Model):
+    ACTION_CHOICES = (
+        ('create', 'Created'),
+        ('update', 'Updated'),
+        ('delete', 'Deleted'),
+    )
+    
+    transfer_booking = models.ForeignKey('TransferBooking', on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    field_name = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
