@@ -9,11 +9,12 @@ class UserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Make sure we have access to request.user
         if hasattr(request, 'user'):
             _thread_locals.user = request.user if request.user.is_authenticated else None
+            # print("Middlearetheread:", {_thread_locals.user})
         else:
             _thread_locals.user = None
-            
+            print("no user in middlware")
+        
         response = self.get_response(request)
         return response

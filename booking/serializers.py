@@ -24,6 +24,29 @@ class TransferBookingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['status', 'unique_code']
 
+    def create(self, validated_data):
+        current_user = self.context.get('current_user')
+        print(f"Current user in serializer create: {current_user}")
+        
+        # Create the instance without _current_user in validated_data
+        instance = TransferBooking.objects.create(**validated_data)
+        
+        # Set _current_user after creation
+        instance._current_user = current_user
+        instance.save()
+        
+        return instance
+
+    def update(self, instance, validated_data):
+        current_user = self.context.get('current_user')
+        instance._current_user = current_user
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
+        instance.save()
+        return instance
+    
     def get_driver_name(self, obj):
         return obj.driver.username if obj.driver else None
 
@@ -35,6 +58,8 @@ class DriverTransferBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransferBooking
         fields = ['id', 'name', 'email', 'number', 'date', 'time', 'from_location', 'to_location', 'status']
+        read_only_fields = ['id', 'name', 'email', 'number', 'date', 'time', 'from_location', 'to_location']
+
 
 
 class TransferBookingAuditSerializer(serializers.ModelSerializer):
@@ -43,7 +68,7 @@ class TransferBookingAuditSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TransferBookingAudit
-        fields = ['id', 'staff_name', 'action', 'field_name', 'old_value', 
+        fields = ['id', 'staff_name','user', 'action', 'field_name', 'old_value', 
                  'new_value', 'timestamp', 'booking_name']
     
     def get_staff_name(self, obj):

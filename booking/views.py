@@ -1,13 +1,15 @@
 from rest_framework import viewsets
 from .models import TourBooking,TransferBooking,TransferBookingAudit
-from .serializers import BookingSerializer,TransferBookingSerializer,TransferBookingAuditSerializer
+from .serializers import BookingSerializer,TransferBookingSerializer,TransferBookingAuditSerializer,DriverTransferBookingSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework import status
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = TourBooking.objects.all()
@@ -16,7 +18,7 @@ class BookingViewSet(viewsets.ModelViewSet):
 @method_decorator(csrf_exempt, name='dispatch')
 class BookingTransferViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  
     serializer_class = TransferBookingSerializer
 
     def get_queryset(self):
@@ -27,22 +29,18 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
     
 
     def perform_create(self, serializer):
-        # Keep existing email logic
-        user_email = self.request.user.email if self.request.user.is_authenticated else None
-        # Add current user to instance for audit
-        instance = serializer.save(email=user_email)
-        instance._current_user = self.request.user if self.request.user.is_authenticated else None
-        instance.save()
+        print("Perform create in viewsets")
+        current_user = self.request.user
+        print(f"Current user in create viewset: {current_user}")
+        serializer.context['current_user'] = current_user
+        serializer.save()
 
     def perform_update(self, serializer):
-        # First, get the current user
-        current_user = self.request.user if self.request.user.is_authenticated else None
-        # Save the instance first
-        instance = serializer.save()
-        # Then set the current user for audit
-        instance._current_user = current_user
-        # Save again to trigger the audit
-        instance.save()
+        print("Perform update in viewsets")
+        current_user = self.request.user
+        print(f"Current user in viewset: {current_user}")
+        serializer.context['current_user'] = current_user
+        serializer.save()
 
     @action(detail=False, methods=['get'])
     def user_bookings(self, request):
@@ -53,6 +51,39 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({'error': 'Email parameter is required'}, status=400)
     
+    @action(detail=True, methods=['patch'])
+    def update_booking_status(self, request, pk=None):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if request.user.user_type != 'driver':
+            return Response({'error': 'Only drivers can update booking status'}, 
+                        status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            booking = TransferBooking.objects.get(pk=pk, driver=request.user)
+        except TransferBooking.DoesNotExist:
+            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        
+        # Validate status transition
+        valid_transitions = {
+            'pending': ['ongoing'],
+            'ongoing': ['done'],
+        }
+        
+        if booking.status not in valid_transitions or new_status not in valid_transitions.get(booking.status, []):
+            return Response({
+                'error': f'Invalid status transition from {booking.status} to {new_status}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        booking.status = new_status
+        booking.save()
+        
+        serializer = DriverTransferBookingSerializer(booking)
+        return Response(serializer.data)
+    
 
 class TransferBookingAuditViewSet(ReadOnlyModelViewSet):
     queryset = TransferBookingAudit.objects.all()
@@ -61,4 +92,4 @@ class TransferBookingAuditViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return TransferBookingAudit.objects.select_related(
             'user', 'transfer_booking'
-        ).order_by('-timestamp')[:10]  # Get last 10 changes
+        ).order_by('-timestamp')[:10] 

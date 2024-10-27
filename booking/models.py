@@ -66,6 +66,7 @@ class TransferBooking(models.Model):
         ('done', 'Done'),
         ('pending', 'Pending'),
         ('posted', 'Posted'),
+        ('ongoing','OnGoing'),
         ('cancelled', 'Cancelled'),
     )
     transfer_name = models.ForeignKey(TransferMeetAssist, on_delete=models.CASCADE, null=True, blank=True)
@@ -93,11 +94,20 @@ class TransferBooking(models.Model):
         return f"{self.name} - {self.unique_code}"
 
     def save(self, *args, **kwargs):
+        print("Save method called")
+        
+        # Get current_user from instance attribute or kwargs
+        current_user = kwargs.pop('_current_user', None) or getattr(self, '_current_user', None)
+        print(f"Current user in save: {current_user}")
+        
+        # Store current_user before calling super().save()
+        self._current_user = current_user
+        
         if not self.unique_code:
             self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:
             self.send_rejection_email()
-        self._current_user = getattr(_thread_locals, 'user', None)
+        
         super().save(*args, **kwargs)
 
     

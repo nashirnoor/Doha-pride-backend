@@ -19,7 +19,6 @@ from django.db import connection
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 logger = logging.getLogger(__name__)
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import parser_classes
