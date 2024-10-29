@@ -134,7 +134,6 @@ class DriverProfile(viewsets.GenericViewSet):
         
         serializer = UpdateProfilePhotoSerializer(request.user, data=request.data)
         if serializer.is_valid():
-            # Delete old photo if it exists
             if request.user.profile_photo:
                 request.user.profile_photo.delete(save=False)
             
