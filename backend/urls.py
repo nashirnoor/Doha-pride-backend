@@ -27,10 +27,9 @@ from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
 from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet,DriverProfile
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from django.views.decorators.csrf import csrf_exempt
 router = DefaultRouter()
 router.register(r'bookings-tour', BookingViewSet)
-router.register(r'bookings-transfer', csrf_exempt(BookingTransferViewSet),basename='booking-transfer')
+router.register(r'bookings-transfer', BookingTransferViewSet,basename='booking-transfer')
 router.register(r'drivers', DriverViewSet, basename='drivers')
 router.register('auth', AuthViewSet, basename='auth')
 router.register('banners', BannerViewSet)
