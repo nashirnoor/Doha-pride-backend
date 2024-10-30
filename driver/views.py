@@ -122,10 +122,10 @@ class AuthViewSet(viewsets.GenericViewSet):
         
     
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([AllowAny])
 @method_decorator(csrf_exempt, name='dispatch')
 class DriverProfile(viewsets.GenericViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser)
     @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
     def update_profile_photo(self, request):

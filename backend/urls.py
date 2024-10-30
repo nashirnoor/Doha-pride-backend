@@ -23,10 +23,9 @@ from app import views
 from django.conf import settings
 from django.conf.urls.static import static
 from contact.views import ContactView
-from home.views import BackgroundVideoListView,CardOneListView,CardTwoListView
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView, TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
-from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet
+from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet,DriverProfile
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
@@ -37,7 +36,7 @@ router.register('auth', AuthViewSet, basename='auth')
 router.register('banners', BannerViewSet)
 router.register('driver-feedback', DriverFeedbackViewSet)
 router.register('transfer-audit', TransferBookingAuditViewSet)
-# router.register('driver-profile',DriverProfile,basename='driver-profile')
+router.register('driver-profile',DriverProfile,basename='driver-profile')
 
 
 urlpatterns = [
@@ -47,7 +46,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin', admin.site.urls),
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
-    path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
+    # path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
     path('contact/',  ContactView.as_view(), name='contact'),
     path('statistics/', StatisticListCreateAPIView.as_view(), name='statistic-list'),
     path('activities/', ActivityListCreateAPIView.as_view(), name='activity-list'),
@@ -55,9 +54,6 @@ urlpatterns = [
     path('tours/', ToursListView.as_view(), name='tours-list'),
     path('tours/<int:id>/', ToursAndActivitiesDetailView.as_view(), name='tour-detail'),
     path('top-activities/', TopActivitiesListView.as_view(), name='top-activities-list'),
-    path('background-video/', BackgroundVideoListView.as_view(), name='background_video_list'),
-    path('card-one/', CardOneListView.as_view(), name='card_one_list'),
-    path('card-two/', CardTwoListView.as_view(), name='card_two_list'),
     path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
 
 ]

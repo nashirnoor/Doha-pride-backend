@@ -9,6 +9,6 @@ class TransferMeetAssistList(generics.ListCreateAPIView):
     queryset = TransferMeetAssist.objects.all()
     serializer_class = TransferMeetAssistSerializer
 
-class TransferMeetAssistDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = TransferMeetAssist.objects.all()
-    serializer_class = TransferMeetAssistSerializer
+# class TransferMeetAssistDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = TransferMeetAssist.objects.all()
+#     serializer_class = TransferMeetAssistSerializer
