@@ -16,6 +16,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
 
 @method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name='update_booking_status')
 class BookingTransferViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]  
