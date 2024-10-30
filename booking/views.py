@@ -51,7 +51,7 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(bookings, many=True)
             return Response(serializer.data)
         return Response({'error': 'Email parameter is required'}, status=400)
-    
+    @csrf_exempt
     @action(detail=True, methods=['patch'])
     def update_booking_status(self, request, pk=None):
         if not request.user.is_authenticated:
