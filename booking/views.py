@@ -16,7 +16,6 @@ class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
 
 @method_decorator(csrf_exempt, name='dispatch')
-@method_decorator(csrf_exempt, name='update_booking_status')
 class BookingTransferViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]  
@@ -51,13 +50,16 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(bookings, many=True)
             return Response(serializer.data)
         return Response({'error': 'Email parameter is required'}, status=400)
+    
     @csrf_exempt
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
     def update_booking_status(self, request, pk=None):
+        print("INnnnnn")
         if not request.user.is_authenticated:
             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
         
         if request.user.user_type != 'driver':
+            print("drivereer")
             return Response({'error': 'Only drivers can update booking status'}, 
                         status=status.HTTP_403_FORBIDDEN)
         

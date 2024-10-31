@@ -1,8 +1,10 @@
 from rest_framework import generics
 from .models import ToursAndActivities,TopActivities
 from .serailizers import ToursAndActivitiesSerializer,TopActivitiesSerializer
+from rest_framework.permissions import AllowAny
 
 class ToursAndActivitiesDetailView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
     queryset = ToursAndActivities.objects.all()
     serializer_class = ToursAndActivitiesSerializer
     lookup_field = 'id'
@@ -12,10 +14,12 @@ class ToursAndActivitiesDetailView(generics.RetrieveAPIView):
         return super().retrieve(request, *args, **kwargs)
 
 class ToursListView(generics.ListCreateAPIView):
+    permission_classes = [AllowAny]
     queryset = ToursAndActivities.objects.all()
     serializer_class = ToursAndActivitiesSerializer
 
 class TopActivitiesListView(generics.ListCreateAPIView):
+    permission_classes = [AllowAny]
     queryset = TopActivities.objects.all()
     serializer_class = TopActivitiesSerializer
 
