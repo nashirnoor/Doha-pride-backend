@@ -3,8 +3,10 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .models import Contact
 from .serializers import ContactSerializer
+from rest_framework.permissions import AllowAny
 
 class ContactView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         contact = Contact.objects.first()  # Assuming you have only one contact entry
         if contact:
