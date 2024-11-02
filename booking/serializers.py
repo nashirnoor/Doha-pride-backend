@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TourBooking,TransferBooking,TransferBookingAudit
+from .models import HotelCategory,HotelSubcategory,TourBooking,TransferBooking,TransferBookingAudit
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +22,7 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             'driver_name', 'transfer_service_name', 'hotel_name', 'vehicle',
             'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount'
         ]
-        read_only_fields = ['status', 'unique_code']
+        read_only_fields = ['unique_code']
 
     def create(self, validated_data):
         current_user = self.context.get('current_user')
@@ -76,3 +76,17 @@ class TransferBookingAuditSerializer(serializers.ModelSerializer):
     
     def get_booking_name(self, obj):
         return f"{obj.transfer_booking.name} ({obj.transfer_booking.unique_code})"
+    
+
+
+class SubcategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HotelSubcategory
+        fields = ['id', 'name']
+
+class HotelCategorySerializer(serializers.ModelSerializer):
+    subcategories = SubcategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HotelCategory
+        fields = ['id', 'hotel_name', 'subcategories']

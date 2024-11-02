@@ -144,3 +144,21 @@ class TransferBookingAudit(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
+
+
+
+class HotelCategory(models.Model):
+    hotel_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.hotel_name
+    
+
+class HotelSubcategory(models.Model):
+    category = models.ForeignKey(HotelCategory, related_name="subcategories", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name} ({self.category.hotel_name})"
+    

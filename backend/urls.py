@@ -23,6 +23,7 @@ from app import views
 from django.conf import settings
 from django.conf.urls.static import static
 from contact.views import ContactView
+from booking.views import CategoryListView
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView,TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
 from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet,DriverProfile
@@ -54,6 +55,8 @@ urlpatterns = [
     path('tours/<int:id>/', ToursAndActivitiesDetailView.as_view(), name='tour-detail'),
     path('top-activities/', TopActivitiesListView.as_view(), name='top-activities-list'),
     path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
+    path('api/hotel-categories/', CategoryListView.as_view(), name='category-list'),
+
 
 ]
 

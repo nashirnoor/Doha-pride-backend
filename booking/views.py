@@ -1,17 +1,19 @@
 from rest_framework import viewsets
-from .models import TourBooking,TransferBooking,TransferBookingAudit
-from .serializers import BookingSerializer,TransferBookingSerializer,TransferBookingAuditSerializer,DriverTransferBookingSerializer
+from .models import TourBooking,TransferBooking,TransferBookingAudit,HotelCategory
+from .serializers import BookingSerializer,TransferBookingSerializer,TransferBookingAuditSerializer,DriverTransferBookingSerializer,HotelCategorySerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
 class BookingViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = TourBooking.objects.all()
     serializer_class = BookingSerializer
 
@@ -96,3 +98,12 @@ class TransferBookingAuditViewSet(ReadOnlyModelViewSet):
         return TransferBookingAudit.objects.select_related(
             'user', 'transfer_booking'
         ).order_by('-timestamp')[:10] 
+    
+
+class CategoryListView(APIView):
+    permission_classes = [AllowAny]  
+
+    def get(self, request):
+        categories = HotelCategory.objects.prefetch_related('subcategories').all()
+        serializer = HotelCategorySerializer(categories, many=True)
+        return Response(serializer.data)

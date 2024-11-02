@@ -175,6 +175,7 @@ class DriverFeedbackViewSet(viewsets.ModelViewSet):
 
 
 class DriverViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     serializer_class = UserSerializer
 
     def get_queryset(self):
