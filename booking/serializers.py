@@ -1,14 +1,36 @@
 from rest_framework import serializers
-from .models import HotelCategory,HotelSubcategory,TourBooking,TransferBooking,TransferBookingAudit
+from .models import HotelCategory,HotelSubcategory,TourBooking,TransferBooking,TransferBookingAudit,TourBookingAudit
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourBooking
-        fields = ['id', 'name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code']
-        read_only_fields = ['status','unique_code']
+        fields = ['id', 'name','tour_name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code','travel_agency']
+        read_only_fields = ['unique_code','travel_agency']
 
         def get_tour_service_name(self, obj):
           return obj.tour_activity if obj.tour_activity else None
+        
+        def create(self, validated_data):
+            current_user = self.context.get('current_user')
+            print(f"Current user in serializer create: {current_user}")
+            # Create the instance without _current_user in validated_data
+            instance = TourBooking.objects.create(**validated_data)
+            # Set _current_user after creation
+            instance._current_user = current_user
+            instance.save()
+        
+            return instance
+
+    def update(self, instance, validated_data):
+        current_user = self.context.get('current_user')
+        instance._current_user = current_user
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
+        instance.save()
+        return instance
+    
 
 class TransferBookingSerializer(serializers.ModelSerializer):
     driver_name = serializers.SerializerMethodField()
@@ -20,9 +42,10 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             'id', 'name', 'email', 'number', 'date', 'time', 'status',
             'transfer_name', 'from_location', 'to_location', 'driver',
             'driver_name', 'transfer_service_name', 'hotel_name', 'vehicle',
-            'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount'
+            'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount',
+            'travel_agency'
         ]
-        read_only_fields = ['unique_code']
+        read_only_fields = ['unique_code','travel_agency']
 
     def create(self, validated_data):
         current_user = self.context.get('current_user')
@@ -77,6 +100,26 @@ class TransferBookingAuditSerializer(serializers.ModelSerializer):
     def get_booking_name(self, obj):
         return f"{obj.transfer_booking.name} ({obj.transfer_booking.unique_code})"
     
+
+class TourBookingAuditSerializer(serializers.ModelSerializer):
+    staff_name = serializers.SerializerMethodField()
+    booking_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = TourBookingAudit
+        fields = ['id', 'staff_name','user', 'action', 'field_name', 'old_value', 
+                 'new_value', 'timestamp', 'booking_name']
+    
+    def get_staff_name(self, obj):
+        return obj.user.username if obj.user else 'System'
+    
+    def get_booking_name(self, obj):
+        return f"{obj.tour_booking.name} ({obj.tour_booking.unique_code})"
+    
+
+
+
+
 
 
 class SubcategorySerializer(serializers.ModelSerializer):

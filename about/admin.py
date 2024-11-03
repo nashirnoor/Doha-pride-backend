@@ -10,13 +10,13 @@ class StatisticAdmin(admin.ModelAdmin):
     list_filter = ('title',)
 
 
-@admin.register(Activity)
-class ActivityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon_display')
-    search_fields = ('name',)
+# @admin.register(Activity)
+# class ActivityAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'icon_display')
+#     search_fields = ('name',)
     
-    def icon_display(self, obj):
-        return format_html('<div style="width: 24px; height: 24px;">{}</div>', obj.icon)
-    icon_display.short_description = 'Icon'
+#     def icon_display(self, obj):
+#         return format_html('<div style="width: 24px; height: 24px;">{}</div>', obj.icon)
+#     icon_display.short_description = 'Icon'
 
 # admin.site.register(Description)

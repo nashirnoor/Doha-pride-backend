@@ -1,6 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
 from .models import DriverFeedback,Banner,User
 
 @admin.register(DriverFeedback)
@@ -22,4 +20,9 @@ class DriverFeedbackAdmin(admin.ModelAdmin):
     get_image.short_description = 'Has Image'
 
 admin.site.register(Banner)
-admin.site.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'user_type') 
+    search_fields = ('email', 'username')  
+    list_filter = ('user_type',)  
+
+admin.site.register(User, UserAdmin)

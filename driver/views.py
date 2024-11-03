@@ -45,8 +45,10 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def login(self, request):
         serializer = LoginSerializer(data=request.data)
+        print(serializer,"sssss")
         if serializer.is_valid():
             user = authenticate(email=serializer.validated_data['email'], password=serializer.validated_data['password'])
+            print(user,"usesrrr")
             if user:
                 refresh = RefreshToken.for_user(user)
                 return Response({

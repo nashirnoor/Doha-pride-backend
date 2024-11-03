@@ -17,13 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingAuditViewSet
+from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingAuditViewSet,DashboardStatsView
 from django.urls import path
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
 from contact.views import ContactView
-from booking.views import CategoryListView
+from booking.views import CategoryListView,TravelAgencyTransferBookingsViewSet,TravelAgencyTourBookingsViewSet
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView,TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
 from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet,DriverProfile
@@ -37,6 +37,10 @@ router.register('banners', BannerViewSet)
 router.register('driver-feedback', DriverFeedbackViewSet)
 router.register('transfer-audit', TransferBookingAuditViewSet)
 router.register('driver-profile',DriverProfile,basename='driver-profile')
+router.register(r'travel-agency-transfer', TravelAgencyTransferBookingsViewSet, basename='travel-agency-transfer')
+router.register(r'travel-agency-tour', TravelAgencyTourBookingsViewSet, basename='travel-agency-tour')
+
+
 
 
 urlpatterns = [
@@ -45,6 +49,8 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin', admin.site.urls),
+    path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
+
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
     # path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
     path('contact/',  ContactView.as_view(), name='contact'),

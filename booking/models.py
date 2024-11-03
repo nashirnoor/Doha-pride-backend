@@ -19,6 +19,7 @@ class TourBooking(models.Model):
         ('cancelled', 'Cancelled'),
     )
     tour_activity = models.ForeignKey(ToursAndActivities, on_delete=models.CASCADE,null=True,blank=True)
+    tour_name = models.CharField(max_length=100,null=True,blank=True)
     name = models.CharField(max_length=100)
     email = models.EmailField(null=True,blank=True)
     number = models.CharField(max_length=20,null=True,blank=True)
@@ -35,11 +36,24 @@ class TourBooking(models.Model):
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
+    travel_agency = models.ForeignKey(
+        get_user_model(), 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='agency_booking'
+    )
 
     def __str__(self):
         return f"{self.name} - {self.unique_code}"
 
     def save(self, *args, **kwargs):
+        print("Save method called")
+        # Get current_user from instance attribute or kwargs
+        current_user = kwargs.pop('_current_user', None) or getattr(self, '_current_user', None)
+        print(f"Current user in save: {current_user}")
+        # Store current_user before calling super().save()
+        self._current_user = current_user
         if not self.unique_code:
             self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:
@@ -89,6 +103,13 @@ class TransferBooking(models.Model):
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
+    travel_agency = models.ForeignKey(
+        get_user_model(), 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='agency_bookings'
+    )
 
     def __str__(self):
         return f"{self.name} - {self.unique_code}"
@@ -146,6 +167,26 @@ class TransferBookingAudit(models.Model):
         ordering = ['-timestamp']
 
 
+    
+
+
+class TourBookingAudit(models.Model):
+    ACTION_CHOICES = (
+        ('create', 'Created'),
+        ('update', 'Updated'),
+        ('delete', 'Deleted'),
+    )
+    
+    transfer_booking = models.ForeignKey('TourBooking', on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    field_name = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
 
 
 class HotelCategory(models.Model):
@@ -161,4 +202,5 @@ class HotelSubcategory(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.category.hotel_name})"
+
     
