@@ -21,13 +21,15 @@ from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingA
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
-from contact.views import ContactView
+from contact.views import ContactView,ContactMessageCreateView
 from booking.views import CategoryListView,TravelAgencyTransferBookingsViewSet,TravelAgencyTourBookingsViewSet,TourBookingAuditViewSet,get_agency_dashboard_stats,TransferBookingAuditViewSetDashboard,TourBookingAuditViewSetDashboard
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView,TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
 from driver.views import AuthViewSet,BannerViewSet,DriverFeedbackViewSet,DriverViewSet,DriverProfile
 from home.views import BlogPostViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+
 router = DefaultRouter()
 router.register(r'bookings-tour', BookingViewSet)
 router.register(r'bookings-transfer', BookingTransferViewSet,basename='booking-transfer')
@@ -58,6 +60,7 @@ urlpatterns = [
     path('admin', admin.site.urls),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
     path('agency-dashboard-stats/', get_agency_dashboard_stats, name='booking-counts-agency'),
+    path('api/contact/', ContactMessageCreateView.as_view(), name='contact-message-create'),
 
 
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
