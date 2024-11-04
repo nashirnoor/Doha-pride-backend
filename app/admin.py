@@ -2,8 +2,9 @@
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.utils.html import format_html
-from .models import TransferMeetAssist, Point
+from .models import TransferMeetAssist, Point,HomeBanner
 
+admin.site.register(HomeBanner)
 class PointInline(admin.TabularInline):
     model = Point
     extra = 1

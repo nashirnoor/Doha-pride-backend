@@ -1,11 +1,16 @@
 # serializers.py
 from rest_framework import serializers
-from .models import TransferMeetAssist, Point
+from .models import TransferMeetAssist, Point,HomeBanner
 
 class PointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Point
         fields = ['id', 'text']
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeBanner
+        fields = ['id', 'title', 'image', 'description']
 
 class TransferMeetAssistSerializer(serializers.ModelSerializer):
     points = PointSerializer(many=True, read_only=True)

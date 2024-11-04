@@ -167,8 +167,6 @@ class TransferBookingAudit(models.Model):
         ordering = ['-timestamp']
 
 
-    
-
 
 class TourBookingAudit(models.Model):
     ACTION_CHOICES = (
@@ -177,7 +175,7 @@ class TourBookingAudit(models.Model):
         ('delete', 'Deleted'),
     )
     
-    transfer_booking = models.ForeignKey('TourBooking', on_delete=models.CASCADE)
+    tour_booking = models.ForeignKey('TourBooking', on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     field_name = models.CharField(max_length=100)

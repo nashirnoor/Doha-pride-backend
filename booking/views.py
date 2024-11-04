@@ -10,6 +10,8 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -90,7 +92,79 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+# views.py
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
+import re
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class TransferBookingAuditViewSet(ReadOnlyModelViewSet):
+    queryset = TransferBookingAudit.objects.all()
+    serializer_class = TransferBookingAuditSerializer
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        queryset = TransferBookingAudit.objects.select_related(
+            'user', 'transfer_booking'
+        ).order_by('-timestamp')
+        
+        search = self.request.query_params.get('search', '')
+        booking_id = self.request.query_params.get('booking_id', '')
+        
+        if search:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search) |
+                Q(transfer_booking__name__icontains=search)
+            )
+            
+        if booking_id:
+            queryset = queryset.filter(
+                transfer_booking__unique_code=booking_id
+            )
+            
+        return queryset
+    
+class TourBookingAuditViewSet(ReadOnlyModelViewSet):
+    queryset = TourBookingAudit.objects.all()
+    serializer_class = TourBookingAuditSerializer
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        queryset = TourBookingAudit.objects.select_related(
+            'user', 'tour_booking'
+        ).order_by('-timestamp')
+        
+        search = self.request.query_params.get('search', '')
+        booking_id = self.request.query_params.get('booking_id', '')
+        
+        if search:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search) |
+                Q(tour_booking__name__icontains=search)
+            )
+            
+        if booking_id:
+            queryset = queryset.filter(
+                tour_booking__unique_code=booking_id
+            )
+            
+        return queryset
+
+
+#Dashboard Stats in Admin side of Recent Actions
+class TransferBookingAuditViewSetDashboard(ReadOnlyModelViewSet):
     queryset = TransferBookingAudit.objects.all()
     serializer_class = TransferBookingAuditSerializer
     
@@ -98,8 +172,9 @@ class TransferBookingAuditViewSet(ReadOnlyModelViewSet):
         return TransferBookingAudit.objects.select_related(
             'user', 'transfer_booking'
         ).order_by('-timestamp')[:10] 
-    
-class TourBookingAuditViewSet(ReadOnlyModelViewSet):
+
+
+class TourBookingAuditViewSetDashboard(ReadOnlyModelViewSet):
     queryset = TourBookingAudit.objects.all()
     serializer_class = TourBookingAuditSerializer
     
@@ -169,6 +244,78 @@ class TravelAgencyTourBookingsViewSet(viewsets.ModelViewSet):
         
         serializer.context['current_user'] = self.request.user
         serializer.save()
+
+
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from django.db.models import Count
+from datetime import datetime
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsTravelAgencyUser])
+def get_agency_dashboard_stats(request):
+    # Get current month's data
+    current_month = datetime.now().month
+    
+    # Get transfer bookings count for current month
+    transfer_bookings_count = TransferBooking.objects.filter(
+        travel_agency=request.user,
+        created_at__month=current_month
+    ).count()
+
+    # Get tour bookings count for current month
+    tour_bookings_count = TourBooking.objects.filter(
+        travel_agency=request.user,
+        created_at__month=current_month
+    ).count()
+
+    # Get monthly data for transfer bookings
+    transfer_monthly_data = TransferBooking.objects.filter(
+        travel_agency=request.user,
+    ).extra(
+        select={'month': "EXTRACT(month FROM created_at)"}
+    ).values('month').annotate(
+        bookings=Count('id')
+    ).order_by('month')
+
+    # Get monthly data for tour bookings
+    tour_monthly_data = TourBooking.objects.filter(
+        travel_agency=request.user,
+    ).extra(
+        select={'month': "EXTRACT(month FROM created_at)"}
+    ).values('month').annotate(
+        bookings=Count('id')
+    ).order_by('month')
+
+    # Convert month numbers to month names
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    transfer_data = [
+        {
+            'month': month_names[int(item['month'])-1],
+            'bookings': item['bookings']
+        } for item in transfer_monthly_data
+    ]
+
+    tour_data = [
+        {
+            'month': month_names[int(item['month'])-1],
+            'bookings': item['bookings']
+        } for item in tour_monthly_data
+    ]
+
+    return Response({
+        'stats': {
+            'transfer_bookings': transfer_bookings_count,
+            'tour_bookings': tour_bookings_count,
+            'drivers': 4  # Static count as requested
+        },
+        'transfer_data': transfer_data,
+        'tour_data': tour_data
+    })
 
 
 

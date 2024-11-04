@@ -15,7 +15,7 @@ class ToursAndActivitiesSerializer(serializers.ModelSerializer):
         model = ToursAndActivities
         fields = [
             'id', 'title', 'description', 'media_gallery', 
-            'min_age', 'max_age', 'passengers_count', 'start_date', 'end_date','price'
+             'passengers_count','price'
         ]
     
     

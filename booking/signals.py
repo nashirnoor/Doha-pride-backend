@@ -67,7 +67,7 @@ def track_tour_booking_changes(sender, instance, **kwargs):
                 print(f"User for audit: {current_user}") 
                 
                 TourBookingAudit.objects.create(
-                    transfer_booking=instance,
+                    tour_booking=instance,
                     user=current_user,
                     action='update',
                     field_name=field.name,
@@ -76,7 +76,7 @@ def track_tour_booking_changes(sender, instance, **kwargs):
                 )
 
 @receiver(post_save, sender=TourBooking)
-def track_transfer_booking_creation(sender, instance, created, **kwargs):
+def track_tour_booking_creation(sender, instance, created, **kwargs):
     print("Post-save signal triggered")
     if created:
         current_user = getattr(instance, '_current_user', None)
@@ -88,7 +88,7 @@ def track_transfer_booking_creation(sender, instance, created, **kwargs):
                 user=current_user,
                 action='create',
                 field_name='record',
-                new_value='Created new transfer booking'
+                new_value='Created new tour booking'
             )
         else:
             print("Warning: No user found for audit creation")
