@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TourBooking,TransferBooking,HotelSubcategory,HotelCategory
+from .models import TourBooking,TransferBooking,HotelSubcategory,HotelCategory,TransferBookingAudit
 
 @admin.register(TourBooking)
 class BookingAdmin(admin.ModelAdmin):
@@ -113,3 +113,4 @@ class BookingAdmin(admin.ModelAdmin):
 
 admin.site.register(HotelCategory)
 admin.site.register(HotelSubcategory)
+admin.site.register(TransferBookingAudit)

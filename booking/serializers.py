@@ -4,32 +4,33 @@ from .models import HotelCategory,HotelSubcategory,TourBooking,TransferBooking,T
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourBooking
-        fields = ['id', 'name','tour_name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code','travel_agency']
+        fields = ['id', 'name','tour_name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code','created','travel_agency']
         read_only_fields = ['unique_code','travel_agency']
-
-        def get_tour_service_name(self, obj):
-          return obj.tour_activity if obj.tour_activity else None
         
-        def create(self, validated_data):
-            current_user = self.context.get('current_user')
-            print(f"Current user in serializer create: {current_user}")
-            # Create the instance without _current_user in validated_data
-            instance = TourBooking.objects.create(**validated_data)
-            # Set _current_user after creation
+    def create(self, validated_data):
+        current_user = self.context.get('current_user')
+        print(f"Current user in serializer create: {current_user}")
+        
+        instance = TourBooking(**validated_data)
+        if current_user and current_user.is_authenticated:
             instance._current_user = current_user
-            instance.save()
-        
-            return instance
+        instance.save()
+        return instance
 
     def update(self, instance, validated_data):
         current_user = self.context.get('current_user')
-        instance._current_user = current_user
+        print(f"Current user in serializer update: {current_user}")
         
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-            
+        
+        instance._current_user = current_user
         instance.save()
         return instance
+    
+    def get_tour_service_name(self, obj):
+          return obj.tour_activity if obj.tour_activity else None
+    
     
 
 class TransferBookingSerializer(serializers.ModelSerializer):
@@ -43,7 +44,7 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             'transfer_name', 'from_location', 'to_location', 'driver',
             'driver_name', 'transfer_service_name', 'hotel_name', 'vehicle',
             'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount',
-            'travel_agency'
+            'travel_agency','created'
         ]
         read_only_fields = ['unique_code','travel_agency']
 
@@ -51,22 +52,20 @@ class TransferBookingSerializer(serializers.ModelSerializer):
         current_user = self.context.get('current_user')
         print(f"Current user in serializer create: {current_user}")
         
-        # Create the instance without _current_user in validated_data
-        instance = TransferBooking.objects.create(**validated_data)
-        
-        # Set _current_user after creation
-        instance._current_user = current_user
-        instance.save()
-        
+        instance = TransferBooking(**validated_data)
+        if current_user:
+            instance._current_user = current_user  
+            instance.save()
         return instance
 
     def update(self, instance, validated_data):
         current_user = self.context.get('current_user')
-        instance._current_user = current_user
+        print(f"Current user in serializer update: {current_user}")
         
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-            
+        
+        instance._current_user = current_user
         instance.save()
         return instance
     
@@ -115,6 +114,8 @@ class TourBookingAuditSerializer(serializers.ModelSerializer):
     
     def get_booking_name(self, obj):
         return f"{obj.tour_booking.name} ({obj.tour_booking.unique_code})"
+    
+    
     
 
 

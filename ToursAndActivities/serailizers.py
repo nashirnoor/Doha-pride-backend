@@ -14,8 +14,8 @@ class ToursAndActivitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ToursAndActivities
         fields = [
-            'id', 'title', 'description', 'media_gallery', 
-             'passengers_count','price'
+            'id', 'title', 'description', 'media_gallery', 'image',
+             'passengers_count','price','category','duration','tag'
         ]
     
     

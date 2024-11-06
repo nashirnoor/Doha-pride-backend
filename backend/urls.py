@@ -21,7 +21,7 @@ from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingA
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
-from contact.views import ContactView,ContactMessageCreateView
+from contact.views import ContactView,ContactMessageViewSet
 from booking.views import CategoryListView,TravelAgencyTransferBookingsViewSet,TravelAgencyTourBookingsViewSet,TourBookingAuditViewSet,get_agency_dashboard_stats,TransferBookingAuditViewSetDashboard,TourBookingAuditViewSetDashboard
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView,TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
@@ -44,6 +44,7 @@ router.register('tour-audit-dashboard', TourBookingAuditViewSetDashboard,basenam
 
 
 router.register('tour-audit', TourBookingAuditViewSet)
+router.register(r'contact-messages', ContactMessageViewSet, basename='contact-messages')
 
 router.register('driver-profile',DriverProfile,basename='driver-profile')
 router.register(r'travel-agency-transfer', TravelAgencyTransferBookingsViewSet, basename='travel-agency-transfer')
@@ -60,7 +61,6 @@ urlpatterns = [
     path('admin', admin.site.urls),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
     path('agency-dashboard-stats/', get_agency_dashboard_stats, name='booking-counts-agency'),
-    path('api/contact/', ContactMessageCreateView.as_view(), name='contact-message-create'),
 
 
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
@@ -74,6 +74,8 @@ urlpatterns = [
     path('top-activities/', TopActivitiesListView.as_view(), name='top-activities-list'),
     path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
     path('api/hotel-categories/', CategoryListView.as_view(), name='category-list'),
+    path('api/banners-home/', views.HomeBannerListView.as_view(), name='banner-home'),
+
 
 
 ]

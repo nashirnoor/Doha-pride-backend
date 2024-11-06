@@ -20,11 +20,11 @@ class TourBooking(models.Model):
     )
     tour_activity = models.ForeignKey(ToursAndActivities, on_delete=models.CASCADE,null=True,blank=True)
     tour_name = models.CharField(max_length=100,null=True,blank=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,null=True,blank=True)
     email = models.EmailField(null=True,blank=True)
     number = models.CharField(max_length=20,null=True,blank=True)
-    date = models.DateField()
-    time = models.TimeField()
+    date = models.DateField(null=True,blank=True)
+    time = models.TimeField(null=True,blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     driver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='tour_bookings')
     rejection_reason = models.TextField(blank=True, null=True)
@@ -35,6 +35,7 @@ class TourBooking(models.Model):
     amount = models.CharField(max_length=20,blank=True,null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
     travel_agency = models.ForeignKey(
         get_user_model(), 
@@ -49,16 +50,24 @@ class TourBooking(models.Model):
 
     def save(self, *args, **kwargs):
         print("Save method called")
-        # Get current_user from instance attribute or kwargs
-        current_user = kwargs.pop('_current_user', None) or getattr(self, '_current_user', None)
+        
+        # Get current_user from kwargs first, then instance attribute
+        current_user = kwargs.pop('_current_user', None)
+        if current_user is None:
+            current_user = getattr(self, '_current_user', None)
+        
         print(f"Current user in save: {current_user}")
-        # Store current_user before calling super().save()
+        
+        # Store current_user
         self._current_user = current_user
+        
         if not self.unique_code:
             self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:
             self.send_rejection_email()
+        
         super().save(*args, **kwargs)
+
 
     
     def generate_unique_code(self):
@@ -102,6 +111,8 @@ class TransferBooking(models.Model):
     amount = models.CharField(max_length=20,blank=True,null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
     travel_agency = models.ForeignKey(
         get_user_model(), 
@@ -165,6 +176,9 @@ class TransferBookingAudit(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+        unique_together = ['transfer_booking', 'action', 'field_name', 'old_value', 'new_value']
+
+
 
 
 
@@ -185,6 +199,8 @@ class TourBookingAudit(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+        unique_together = ['tour_booking', 'action', 'field_name', 'old_value', 'new_value']
+
 
 
 class HotelCategory(models.Model):

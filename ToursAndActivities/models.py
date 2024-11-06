@@ -10,15 +10,48 @@ class TourImage(models.Model):
         return self.alt_text if self.alt_text else "Tour Image"
 
 
+from django.db import models
+
 class ToursAndActivities(models.Model):
+    # Define choices for category
+    CATEGORY_CHOICES = [
+        ('Food & Drink', 'Food & Drink'),
+        ('Sport', 'Sport'),
+        ('City Tour', 'City Tour'),
+        ('Shopping', 'Shopping'),
+        ('Adventure', 'Adventure'),
+        ('Art', 'Art'),
+        ('Culture', 'Culture'),
+        ('Art Culture', 'Art Culture'),
+        ('Adventure Nature', 'Adventure Nature'),
+    ]
+    
+    # Define choices for duration
+    DURATION_CHOICES = [
+        ('1 hr', '1 hr'),
+        ('2 hr', '2 hr'),
+        ('3 hr', '3 hr'),
+        ('4 hr', '4 hr'),
+        ('5 hr', '5 hr'),
+        ('6 hr', '6 hr'),
+        ('half day', 'Half Day'),
+        ('full day', 'Full Day'),
+        ('2 day', '2 Day'),
+    ]
+    
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=3000)
-    media_gallery = models.ManyToManyField(TourImage, related_name='tours',blank=True)
+    image = models.ImageField(upload_to='tour_images/', null=True, blank=True)
+    media_gallery = models.ManyToManyField('TourImage', related_name='tours', blank=True)
     passengers_count = models.PositiveIntegerField(default=1)
-    price = models.PositiveIntegerField(default=1,null=True,blank=True)
+    duration = models.CharField(max_length=30, choices=DURATION_CHOICES, null=True, blank=True)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, null=True, blank=True)
+    price = models.PositiveIntegerField(default=1, null=True, blank=True)
+    tag = models.CharField(max_length=30,null=True,blank=True)
 
     def __str__(self):
         return self.title
+
     
 
 class TopActivities(models.Model):

@@ -16,6 +16,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 import cloudinary
 import dj_database_url
+load_dotenv()
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,6 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-_xwzfc($01^a*laapa=24b@es%@vj2^x#t#9b4$65)59sqwq%#'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -127,6 +130,7 @@ ASGI_APPLICATION = 'backend.asgi.application'
 #         },
 #     }
 # }
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
@@ -211,7 +215,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -221,7 +225,6 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
-load_dotenv()
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -287,6 +290,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nashirnoor2002@gmail.com'
 EMAIL_HOST_PASSWORD = 'pqcyjuxcmcqpesez'  
 DEFAULT_FROM_EMAIL = 'nashirnoor2002@gmail.com'
+
 
 
 AUTH_USER_MODEL = 'driver.User'

@@ -9,15 +9,37 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth
+from django.contrib.auth import get_user_model
+from contact.models import ContactMessage
+from datetime import datetime
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class BookingViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = TourBooking.objects.all()
     serializer_class = BookingSerializer
+
+    def perform_create(self, serializer):
+        print("Perform create in viewsets")
+        current_user = None
+        if self.request.user.is_authenticated:
+            current_user = self.request.user
+        print(f"Current user in create viewset: {current_user}")
+        serializer.context['current_user'] = current_user
+        serializer.save()
+
+    def perform_update(self, serializer):
+        print("Perform update in viewsets")
+        current_user = self.request.user
+        print(f"Current user in update viewset: {current_user}")
+        serializer.context['current_user'] = current_user
+        serializer.save()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BookingTransferViewSet(viewsets.ModelViewSet):
@@ -34,15 +56,15 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         print("Perform create in viewsets")
-        current_user = self.request.user
+        current_user = self.request.user if self.request.user.is_authenticated else None
         print(f"Current user in create viewset: {current_user}")
-        serializer.context['current_user'] = current_user
+        serializer.context['current_user'] = current_user  # Set in context instead
         serializer.save()
 
     def perform_update(self, serializer):
         print("Perform update in viewsets")
         current_user = self.request.user
-        print(f"Current user in viewset: {current_user}")
+        print(f"Current user in update viewset: {current_user}")
         serializer.context['current_user'] = current_user
         serializer.save()
 
@@ -246,113 +268,84 @@ class TravelAgencyTourBookingsViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
-
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
-from django.db.models import Count
-from datetime import datetime
-
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsTravelAgencyUser])
 def get_agency_dashboard_stats(request):
-    # Get current month's data
-    current_month = datetime.now().month
-    
-    # Get transfer bookings count for current month
-    transfer_bookings_count = TransferBooking.objects.filter(
-        travel_agency=request.user,
-        created_at__month=current_month
-    ).count()
+    try:
+        current_month = datetime.now().month
+        current_year = datetime.now().year
 
-    # Get tour bookings count for current month
-    tour_bookings_count = TourBooking.objects.filter(
-        travel_agency=request.user,
-        created_at__month=current_month
-    ).count()
+        # Get transfer bookings statistics with monthly data
+        transfer_bookings = TransferBooking.objects.filter(travel_agency=request.user)
+        transfer_monthly = transfer_bookings.filter(
+            status__in=['done', 'pending', 'posted'],
+            date__year=current_year
+        ).annotate(
+            month=ExtractMonth('date')
+        ).values('month').annotate(
+            bookings=Count('id')
+        ).order_by('month')
 
-    # Get monthly data for transfer bookings
-    transfer_monthly_data = TransferBooking.objects.filter(
-        travel_agency=request.user,
-    ).extra(
-        select={'month': "EXTRACT(month FROM created_at)"}
-    ).values('month').annotate(
-        bookings=Count('id')
-    ).order_by('month')
+        # Get tour bookings statistics with monthly data
+        tour_bookings = TourBooking.objects.filter(travel_agency=request.user)
+        tour_monthly = tour_bookings.filter(
+            status__in=['done', 'pending', 'posted'],
+            date__year=current_year
+        ).annotate(
+            month=ExtractMonth('date')
+        ).values('month').annotate(
+            bookings=Count('id')
+        ).order_by('month')
 
-    # Get monthly data for tour bookings
-    tour_monthly_data = TourBooking.objects.filter(
-        travel_agency=request.user,
-    ).extra(
-        select={'month': "EXTRACT(month FROM created_at)"}
-    ).values('month').annotate(
-        bookings=Count('id')
-    ).order_by('month')
+        # Get total counts
+        transfer_bookings_count = transfer_bookings.count()
+        tour_bookings_count = tour_bookings.count()
 
-    # Convert month numbers to month names
-    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        # Get pending counts
+        pending_transfer_bookings = transfer_bookings.filter(status='pending').count()
+        pending_tour_bookings = tour_bookings.filter(status='pending').count()
 
-    transfer_data = [
-        {
-            'month': month_names[int(item['month'])-1],
-            'bookings': item['bookings']
-        } for item in transfer_monthly_data
-    ]
+        # Get driver count
+        driver_count = get_user_model().objects.filter(user_type='driver').count()
 
-    tour_data = [
-        {
-            'month': month_names[int(item['month'])-1],
-            'bookings': item['bookings']
-        } for item in tour_monthly_data
-    ]
+        # Format monthly data
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        
+        transfer_data = [
+            {
+                'month': months[item['month']-1],
+                'bookings': item['bookings']
+            } for item in transfer_monthly
+        ]
 
-    return Response({
-        'stats': {
-            'transfer_bookings': transfer_bookings_count,
-            'tour_bookings': tour_bookings_count,
-            'drivers': 4  # Static count as requested
-        },
-        'transfer_data': transfer_data,
-        'tour_data': tour_data
-    })
+        tour_data = [
+            {
+                'month': months[item['month']-1],
+                'bookings': item['bookings']
+            } for item in tour_monthly
+        ]
 
+        return Response({
+            'stats': {
+                'transfer_bookings': transfer_bookings_count,
+                'pending_transfers': pending_transfer_bookings,
+                'tour_bookings': tour_bookings_count,
+                'pending_tours': pending_tour_bookings,
+                'drivers': driver_count,
+            },
+            'transfer_data': transfer_data,
+            'tour_data': tour_data,
+        })
 
-
-
-
-
-
-
-
-
-
-
-
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.db.models import Count
-from django.db.models.functions import ExtractMonth
-from datetime import datetime
-from django.contrib.auth import get_user_model
-
+#Admin Dashboard
 class DashboardStatsView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
@@ -392,6 +385,7 @@ class DashboardStatsView(APIView):
             # Get pending counts
             pending_transfers = TransferBooking.objects.filter(status='pending').count()
             pending_tours = TourBooking.objects.filter(status='pending').count()
+            pending_contact = ContactMessage.objects.filter(status='pending').count()
 
             # Format monthly data
             months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -417,6 +411,7 @@ class DashboardStatsView(APIView):
                     'drivers': driver_count,
                     'pending_transfers': pending_transfers,
                     'pending_tours': pending_tours,
+                    'pending_contact':pending_contact,
                 },
                 'transfer_monthly': transfer_data,
                 'tour_monthly': tour_data
