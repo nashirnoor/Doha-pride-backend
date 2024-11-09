@@ -18,12 +18,30 @@ from datetime import datetime
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
+from django.utils import timezone
+from django.db.models import F
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BookingViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = TourBooking.objects.all()
     serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        
+        # First, sort by date
+        queryset = TourBooking.objects.annotate(
+            date_diff=F('date') - today
+        ).order_by(
+            # Put future dates first, sorted by closest to today
+            F('date_diff').asc(nulls_last=True),
+            # For same dates, sort by time
+            'time'
+        )
+        
+        return queryset
 
     def perform_create(self, serializer):
         print("Perform create in viewsets")
