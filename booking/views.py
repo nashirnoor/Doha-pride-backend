@@ -19,7 +19,8 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, Value, Case, When, IntegerField
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -30,13 +31,30 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         today = timezone.now().date()
+        current_time = timezone.now().time()
         
-        # First, sort by date
         queryset = TourBooking.objects.annotate(
-            date_diff=F('date') - today
+            # Calculate the difference in days
+            date_diff=F('date') - today,
+            # Priority for pending status
+            status_priority=Case(
+                When(status='pending', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            # Priority for today's bookings
+            is_today=Case(
+                When(date=today, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
         ).order_by(
-            # Put future dates first, sorted by closest to today
-            F('date_diff').asc(nulls_last=True),
+            # First sort by status (pending first)
+            'status_priority',
+            # Then sort by whether it's today
+            'is_today',
+            # Then sort by date
+            'date',
             # For same dates, sort by time
             'time'
         )
