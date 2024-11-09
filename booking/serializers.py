@@ -4,7 +4,7 @@ from .models import HotelCategory,HotelSubcategory,TourBooking,TransferBooking,T
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourBooking
-        fields = ['id', 'name','tour_name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code','created','travel_agency']
+        fields = ['id', 'name','tour_name', 'email', 'number', 'date','driver','time', 'status','tour_activity','hotel_name','vehicle','flight','room_no','amount','voucher_no','note','unique_code','created','currency','payment_type','travel_agency']
         read_only_fields = ['unique_code','travel_agency']
         
     def create(self, validated_data):
@@ -44,7 +44,7 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             'transfer_name', 'from_location', 'to_location', 'driver',
             'driver_name', 'transfer_service_name', 'hotel_name', 'vehicle',
             'flight', 'room_no', 'voucher_no', 'note', 'unique_code','amount',
-            'travel_agency','created'
+            'travel_agency','created','currency','payment_type'
         ]
         read_only_fields = ['unique_code','travel_agency']
 
@@ -116,12 +116,6 @@ class TourBookingAuditSerializer(serializers.ModelSerializer):
         return f"{obj.tour_booking.name} ({obj.tour_booking.unique_code})"
     
     
-    
-
-
-
-
-
 
 class SubcategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -41,8 +41,12 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ContactMessage.objects.all().order_by('-created_at')
+    
+    @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-    def get_permissions(self):
-        if self.action == 'create':
-            return [AllowAny()]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action == 'create':
+    #         return [AllowAny()]
+    #     return super().get_permissions()

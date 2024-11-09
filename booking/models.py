@@ -35,7 +35,9 @@ class TourBooking(models.Model):
     amount = models.CharField(max_length=20,blank=True,null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
+    currency = models.CharField(max_length=20,blank=True,null=True)
     created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    payment_type = models.CharField(max_length=30,null=True,blank=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
     travel_agency = models.ForeignKey(
         get_user_model(), 
@@ -51,14 +53,12 @@ class TourBooking(models.Model):
     def save(self, *args, **kwargs):
         print("Save method called")
         
-        # Get current_user from kwargs first, then instance attribute
         current_user = kwargs.pop('_current_user', None)
         if current_user is None:
             current_user = getattr(self, '_current_user', None)
         
         print(f"Current user in save: {current_user}")
         
-        # Store current_user
         self._current_user = current_user
         
         if not self.unique_code:
@@ -67,7 +67,6 @@ class TourBooking(models.Model):
             self.send_rejection_email()
         
         super().save(*args, **kwargs)
-
 
     
     def generate_unique_code(self):
@@ -92,6 +91,12 @@ class TransferBooking(models.Model):
         ('ongoing','OnGoing'),
         ('cancelled', 'Cancelled'),
     )
+    CURRENCY_CHOICES = (
+        ('QAR', 'QAR'),
+        ('GBP', 'Pound'),
+        ('USD', 'USD'),
+        ('EUR', 'EURO'),
+    )
     transfer_name = models.ForeignKey(TransferMeetAssist, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100,null=True,blank=True)
     email = models.EmailField(null=True,blank=True)
@@ -103,17 +108,23 @@ class TransferBooking(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(blank=True, null=True)
     driver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='transfer_bookings')
-    # New fields
     hotel_name = models.CharField(max_length=255, blank=True, null=True)
     vehicle = models.CharField(max_length=100, blank=True, null=True)
     flight = models.CharField(max_length=100, blank=True, null=True)
     room_no = models.CharField(max_length=50, blank=True, null=True)
-    amount = models.CharField(max_length=20,blank=True,null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-
+    payment_type = models.CharField(max_length=30,null=True,blank=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
+    currency = models.CharField(
+        max_length=20, 
+        choices=CURRENCY_CHOICES, 
+        default='QAR', 
+        blank=True, 
+        null=True
+    )
     travel_agency = models.ForeignKey(
         get_user_model(), 
         on_delete=models.CASCADE, 

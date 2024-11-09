@@ -107,7 +107,7 @@ def track_tour_booking_changes(sender, instance, **kwargs):
         try:
             old_instance = TourBooking.objects.get(pk=instance.pk)
             fields_to_track = [
-                'name', 'email', 'number', 'date', 'time', 
+                'name', 'email', 'number', 'date', 'time', 'payment_type','currency',
                 'status', 'rejection_reason', 'driver', 'hotel_name',
                 'vehicle', 'flight', 'room_no', 'amount', 'voucher_no', 'note'
             ]
