@@ -20,7 +20,7 @@ class TourBooking(models.Model):
     )
     CURRENCY_CHOICES = (
         ('QAR', 'QAR'),
-        ('GBP', 'Pound'),
+        ('Pound', 'Pound'),
         ('USD', 'USD'),
         ('EUR', 'EURO'),
     )
@@ -105,7 +105,7 @@ class TransferBooking(models.Model):
     )
     CURRENCY_CHOICES = (
         ('QAR', 'QAR'),
-        ('GBP', 'Pound'),
+        ('Pound', 'Pound'),
         ('USD', 'USD'),
         ('EUR', 'EURO'),
     )

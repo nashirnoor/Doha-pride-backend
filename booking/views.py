@@ -84,10 +84,72 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
     serializer_class = TransferBookingSerializer
 
     def get_queryset(self):
+        today = timezone.now().date()
+        current_time = timezone.now().time()
         user_email = self.request.query_params.get('email', None)
+        
+        queryset = TransferBooking.objects.annotate(
+            # Calculate the difference in days
+            date_diff=F('date') - today,
+            status_priority=Case(
+                When(status='pending', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            # Priority for today's bookings
+            is_today=Case(
+                When(date=today, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            # First sort by status (pending first)
+            'status_priority',
+            # Then sort by whether it's today
+            'is_today',
+            # Then sort by date
+            'date',
+            # For same dates, sort by time
+            'time'
+        )
+
+        # Apply email filter if provided
         if user_email:
-            return TransferBooking.objects.filter(email=user_email)
-        return TransferBooking.objects.all()
+            queryset = queryset.filter(email=user_email)
+            
+        return queryset
+    
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        current_time = timezone.now().time()
+        
+        queryset = TransferBooking.objects.annotate(
+            # Calculate the difference in days
+            date_diff=F('date') - today,
+            status_priority=Case(
+                When(status='pending', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            # Priority for today's bookings
+            is_today=Case(
+                When(date=today, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            # First sort by status (pending first)
+            'status_priority',
+            # Then sort by whether it's today
+            'is_today',
+            # Then sort by date
+            'date',
+            # For same dates, sort by time
+            'time'
+        )
+        
+        return queryset
     
 
     def perform_create(self, serializer):
