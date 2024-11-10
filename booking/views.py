@@ -460,3 +460,188 @@ class DashboardStatsView(APIView):
                 {'error': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.db.models import Sum, Count
+from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db.models.functions import TruncMonth
+
+class BookingCurrencyStatsView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        selected_year = request.query_params.get('year', datetime.now().year)
+        
+        # Get monthly totals for both booking types
+        tour_monthly = self.get_monthly_totals(TourBooking, selected_year)
+        transfer_monthly = self.get_monthly_totals(TransferBooking, selected_year)
+        
+        # Get yearly totals for both booking types
+        tour_yearly = self.get_yearly_totals(TourBooking, selected_year)
+        transfer_yearly = self.get_yearly_totals(TransferBooking, selected_year)
+        
+        # Format the data for frontend
+        formatted_data = {
+            'monthly_data': self.combine_monthly_data(tour_monthly, transfer_monthly),
+            'yearly_totals': self.combine_yearly_totals(tour_yearly, transfer_yearly),
+            'available_years': self.get_available_years(),
+            'booking_types': {
+                'tour': {
+                    'monthly': self.process_monthly_data(tour_monthly),
+                    'yearly': self.process_yearly_totals(tour_yearly)
+                },
+                'transfer': {
+                    'monthly': self.process_monthly_data(transfer_monthly),
+                    'yearly': self.process_yearly_totals(transfer_yearly)
+                }
+            }
+        }
+        
+        return Response(formatted_data)
+
+    def get_monthly_totals(self, model, year):
+        return (
+            model.objects
+            .filter(
+                status='done',
+                date__year=year
+            )
+            .annotate(month=TruncMonth('date'))
+            .values('month', 'currency')
+            .annotate(total=Sum('amount'))
+            .order_by('month', 'currency')
+        )
+
+    def get_yearly_totals(self, model, year):
+        return (
+            model.objects
+            .filter(
+                status='done',
+                date__year=year
+            )
+            .values('currency')
+            .annotate(total=Sum('amount'))
+        )
+
+    def process_monthly_data(self, monthly_totals):
+        month_dict = {}
+        for entry in monthly_totals:
+            month = entry['month'].strftime('%B')
+            if month not in month_dict:
+                month_dict[month] = {
+                    'month': month,
+                    'QAR': 0,
+                    'GBP': 0,
+                    'USD': 0,
+                    'EUR': 0
+                }
+            month_dict[month][entry['currency']] = float(entry['total'] or 0)
+        return list(month_dict.values())
+
+    def process_yearly_totals(self, yearly_totals):
+        totals = {
+            'QAR': 0,
+            'GBP': 0,
+            'USD': 0,
+            'EUR': 0
+        }
+        for entry in yearly_totals:
+            totals[entry['currency']] = float(entry['total'] or 0)
+        return totals
+
+    def combine_monthly_data(self, tour_monthly, transfer_monthly):
+        combined_dict = {}
+        
+        # Process both sets of monthly data
+        for entry in list(tour_monthly) + list(transfer_monthly):
+            month = entry['month'].strftime('%B')
+            if month not in combined_dict:
+                combined_dict[month] = {
+                    'month': month,
+                    'QAR': 0,
+                    'GBP': 0,
+                    'USD': 0,
+                    'EUR': 0,
+                    'QAR_tour': 0,
+                    'GBP_tour': 0,
+                    'USD_tour': 0,
+                    'EUR_tour': 0,
+                    'QAR_transfer': 0,
+                    'GBP_transfer': 0,
+                    'USD_transfer': 0,
+                    'EUR_transfer': 0
+                }
+            
+            # Add to combined total
+            amount = float(entry['total'] or 0)
+            currency = entry['currency']
+            combined_dict[month][currency] += amount
+            
+            # Add to specific booking type total
+            is_tour = entry in tour_monthly
+            type_suffix = '_tour' if is_tour else '_transfer'
+            combined_dict[month][currency + type_suffix] = amount
+
+        return list(combined_dict.values())
+
+    def combine_yearly_totals(self, tour_yearly, transfer_yearly):
+        combined = {
+            'total': {
+                'QAR': 0,
+                'GBP': 0,
+                'USD': 0,
+                'EUR': 0
+            },
+            'tour': {
+                'QAR': 0,
+                'GBP': 0,
+                'USD': 0,
+                'EUR': 0
+            },
+            'transfer': {
+                'QAR': 0,
+                'GBP': 0,
+                'USD': 0,
+                'EUR': 0
+            }
+        }
+        
+        # Process tour totals
+        for entry in tour_yearly:
+            currency = entry['currency']
+            amount = float(entry['total'] or 0)
+            combined['total'][currency] += amount
+            combined['tour'][currency] = amount
+            
+        # Process transfer totals
+        for entry in transfer_yearly:
+            currency = entry['currency']
+            amount = float(entry['total'] or 0)
+            combined['total'][currency] += amount
+            combined['transfer'][currency] = amount
+            
+        return combined
+
+    def get_available_years(self):
+        # Get years from both booking types
+        tour_years = set(
+            TourBooking.objects
+            .filter(status='done')
+            .dates('date', 'year')
+            .values_list('date__year', flat=True)
+        )
+        
+        transfer_years = set(
+            TransferBooking.objects
+            .filter(status='done')
+            .dates('date', 'year')
+            .values_list('date__year', flat=True)
+        )
+        
+        # Combine and sort years
+        all_years = sorted(tour_years.union(transfer_years), reverse=True)
+        return list(all_years)

@@ -18,6 +18,12 @@ class TourBooking(models.Model):
         ('posted', 'Posted'),
         ('cancelled', 'Cancelled'),
     )
+    CURRENCY_CHOICES = (
+        ('QAR', 'QAR'),
+        ('GBP', 'Pound'),
+        ('USD', 'USD'),
+        ('EUR', 'EURO'),
+    )
     tour_activity = models.ForeignKey(ToursAndActivities, on_delete=models.CASCADE,null=True,blank=True)
     tour_name = models.CharField(max_length=100,null=True,blank=True)
     name = models.CharField(max_length=100,null=True,blank=True)
@@ -32,13 +38,19 @@ class TourBooking(models.Model):
     vehicle = models.CharField(max_length=100, blank=True, null=True)
     flight = models.CharField(max_length=100, blank=True, null=True)
     room_no = models.CharField(max_length=50, blank=True, null=True)
-    amount = models.CharField(max_length=20,blank=True,null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     voucher_no = models.CharField(max_length=100, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
-    currency = models.CharField(max_length=20,blank=True,null=True)
     created = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     payment_type = models.CharField(max_length=30,null=True,blank=True)
     unique_code = models.CharField(max_length=5, unique=True, editable=False, null=True, blank=True)
+    currency = models.CharField(
+        max_length=20, 
+        choices=CURRENCY_CHOICES, 
+        default='QAR', 
+        blank=True, 
+        null=True
+    )
     travel_agency = models.ForeignKey(
         get_user_model(), 
         on_delete=models.CASCADE, 

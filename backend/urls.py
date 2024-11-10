@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingAuditViewSet,DashboardStatsView
+from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingAuditViewSet,DashboardStatsView,BookingCurrencyStatsView
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -60,9 +60,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin', admin.site.urls),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
+    # urls.py
+    path('tour-currency-stats/', BookingCurrencyStatsView.as_view(), name='tour-currency-stats'),
     path('agency-dashboard-stats/', get_agency_dashboard_stats, name='booking-counts-agency'),
-
-
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
     # path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
     path('contact/',  ContactView.as_view(), name='contact'),

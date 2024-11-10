@@ -5,19 +5,30 @@ from asgiref.sync import async_to_sync
 from .models import Message, ChatRoom
 from .serializers import MessageSerializer
 from django.contrib.auth import get_user_model
+import uuid
 
 User = get_user_model()
+
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         user = self.scope['user']
-        if not user.is_authenticated:
-            return
-        self.username = user.username
+        if user.is_authenticated:
+            self.username = user.username
+        else:
+            # Generate temporary ID for guest user
+            self.username = f"guest_{uuid.uuid4().hex[:8]}"
+        
         if self.channel_layer is not None:
             async_to_sync(self.channel_layer.group_add)(
                 self.username, self.channel_name
             )
+            # Add to admin group to receive messages
+            async_to_sync(self.channel_layer.group_add)(
+                'admin_support', self.channel_name
+            )
         self.accept()
+
+    
 
     def disconnect(self, close_code):
         if self.channel_layer is not None:
@@ -66,6 +77,20 @@ class ChatConsumer(WebsocketConsumer):
             data = json.loads(text_data)
             source = data.get('source')
             print(f"Received data: {data}")  
+
+            if source == 'support_chat':
+                # Handle support chat messages
+                message = async_to_sync(self.save_support_message)(data)
+                serialized_message = MessageSerializer(message).data
+
+                # Send to admin group
+                async_to_sync(self.channel_layer.group_send)(
+                    'admin_support',
+                    {
+                        'type': 'chat_message',
+                        'message': serialized_message
+                    }
+                )
 
             if source == 'chat':
                 if 'driver_id' not in data or 'customer_id' not in data:
