@@ -150,14 +150,11 @@ class TransferBooking(models.Model):
 
     def save(self, *args, **kwargs):
         print("Save method called")
-        
         # Get current_user from instance attribute or kwargs
         current_user = kwargs.pop('_current_user', None) or getattr(self, '_current_user', None)
         print(f"Current user in save: {current_user}")
-        
         # Store current_user before calling super().save()
         self._current_user = current_user
-        
         if not self.unique_code:
             self.unique_code = self.generate_unique_code()
         if self.status == 'rejected' and self.rejection_reason:

@@ -7,12 +7,18 @@ from django.contrib.auth.models import AnonymousUser
 @receiver(post_save, sender=TransferBooking)
 def track_transfer_booking_creation(sender, instance, created, **kwargs):
     print("Post-save signal triggered")
-    if created:
-        # Get the current user from the instance
-        current_user = getattr(instance, '_current_user', None)
-        print(f"User in post_save signal: {current_user}")
+    if not created:  # Exit early if this is not a creation
+        return
 
-        # Check if audit entry already exists
+    current_user = getattr(instance, '_current_user', None)
+    print(f"User in post_save signal: {current_user}")
+
+    # Initialize existing_audit as None
+    existing_audit = None
+
+    # Only proceed with audit if we have a valid user
+    if current_user and not isinstance(current_user, AnonymousUser):
+        # Check for existing audit
         existing_audit = TransferBookingAudit.objects.filter(
             transfer_booking=instance,
             action='create',
@@ -20,27 +26,30 @@ def track_transfer_booking_creation(sender, instance, created, **kwargs):
         ).first()
 
         if not existing_audit:
-            TransferBookingAudit.objects.create(
-                transfer_booking=instance,
-                user=current_user,
-                action='create',
-                field_name='booking',
-                old_value=None,
-                new_value=f"Created booking for {instance.name}"
-            )
+            try:
+                TransferBookingAudit.objects.create(
+                    transfer_booking=instance,
+                    user=current_user,
+                    action='create',
+                    field_name='booking',
+                    old_value=None,
+                    new_value=f"Created booking for {instance.name}"
+                )
+            except Exception as e:
+                print(f"Error creating audit entry: {str(e)}")
 
-@receiver(pre_save, sender=TourBooking)
-def track_tour_booking_changes(sender, instance, **kwargs):
-    if instance.pk:
+@receiver(pre_save, sender=TransferBooking)
+def track_transfer_booking_changes(sender, instance, **kwargs):
+    if instance.pk:  # Only for existing instances
         current_user = getattr(instance, '_current_user', None)
         print(f"User in pre_save signal: {current_user}")
 
         # Skip audit creation if user is anonymous or None
         if current_user and not isinstance(current_user, AnonymousUser):
             try:
-                old_instance = TourBooking.objects.get(pk=instance.pk)
+                old_instance = TransferBooking.objects.get(pk=instance.pk)
                 fields_to_track = [
-                    'name', 'email', 'number', 'date', 'time', 
+                    'name', 'email', 'number', 'date', 'time', 'from_location', 'to_location',
                     'status', 'rejection_reason', 'driver', 'hotel_name',
                     'vehicle', 'flight', 'room_no', 'amount', 'voucher_no', 'note'
                 ]
@@ -49,17 +58,25 @@ def track_tour_booking_changes(sender, instance, **kwargs):
                     old_value = getattr(old_instance, field)
                     new_value = getattr(instance, field)
                     
+                    # Add debug print statements
+                    print(f"Checking field {field}: old={old_value}, new={new_value}")
+                    
                     if old_value != new_value:
-                        TourBookingAudit.objects.create(
-                            tour_booking=instance,
+                        print(f"Change detected in {field}")
+                        TransferBookingAudit.objects.create(
+                            transfer_booking=instance,
                             user=current_user,
                             action='update',
                             field_name=field,
-                            old_value=str(old_value),
-                            new_value=str(new_value)
+                            old_value=str(old_value) if old_value is not None else '',
+                            new_value=str(new_value) if new_value is not None else ''
                         )
-            except TourBooking.DoesNotExist:
+            except TransferBooking.DoesNotExist:
+                print("TransferBooking instance not found")
                 pass
+        else:
+            print(f"Skipping audit: current_user={current_user}")
+
 @receiver(post_save, sender=TourBooking)
 def track_tour_booking_creation(sender, instance, created, **kwargs):
     print("Post-save signal triggered")

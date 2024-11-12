@@ -148,10 +148,8 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
             # For same dates, sort by time
             'time'
         )
-        
         return queryset
     
-
     def perform_create(self, serializer):
         print("Perform create in viewsets")
         current_user = self.request.user if self.request.user.is_authenticated else None
@@ -160,11 +158,10 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def perform_update(self, serializer):
-        print("Perform update in viewsets")
         current_user = self.request.user
         print(f"Current user in update viewset: {current_user}")
         serializer.context['current_user'] = current_user
-        serializer.save()
+        serializer.save(_current_user=current_user) 
 
     @action(detail=False, methods=['get'])
     def user_bookings(self, request):
@@ -597,7 +594,7 @@ class BookingCurrencyStatsView(APIView):
                 month_dict[month] = {
                     'month': month,
                     'QAR': 0,
-                    'GBP': 0,
+                    'Pound': 0,
                     'USD': 0,
                     'EUR': 0
                 }
@@ -607,7 +604,7 @@ class BookingCurrencyStatsView(APIView):
     def process_yearly_totals(self, yearly_totals):
         totals = {
             'QAR': 0,
-            'GBP': 0,
+            'Pound': 0,
             'USD': 0,
             'EUR': 0
         }
@@ -625,15 +622,15 @@ class BookingCurrencyStatsView(APIView):
                 combined_dict[month] = {
                     'month': month,
                     'QAR': 0,
-                    'GBP': 0,
+                    'Pound': 0,
                     'USD': 0,
                     'EUR': 0,
                     'QAR_tour': 0,
-                    'GBP_tour': 0,
+                    'Pound_tour': 0,
                     'USD_tour': 0,
                     'EUR_tour': 0,
                     'QAR_transfer': 0,
-                    'GBP_transfer': 0,
+                    'Pound_transfer': 0,
                     'USD_transfer': 0,
                     'EUR_transfer': 0
                 }
@@ -654,19 +651,19 @@ class BookingCurrencyStatsView(APIView):
         combined = {
             'total': {
                 'QAR': 0,
-                'GBP': 0,
+                'Pound': 0,
                 'USD': 0,
                 'EUR': 0
             },
             'tour': {
                 'QAR': 0,
-                'GBP': 0,
+                'Pound': 0,
                 'USD': 0,
                 'EUR': 0
             },
             'transfer': {
                 'QAR': 0,
-                'GBP': 0,
+                'Pound': 0,
                 'USD': 0,
                 'EUR': 0
             }

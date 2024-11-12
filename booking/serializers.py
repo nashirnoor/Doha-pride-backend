@@ -55,7 +55,7 @@ class TransferBookingSerializer(serializers.ModelSerializer):
         instance = TransferBooking(**validated_data)
         if current_user:
             instance._current_user = current_user  
-            instance.save()
+        instance.save()
         return instance
 
     def update(self, instance, validated_data):
@@ -66,8 +66,10 @@ class TransferBookingSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         
         instance._current_user = current_user
-        instance.save()
+        instance.save(_current_user=current_user)  # Pass directly to save method
         return instance
+    
+    
     
     def get_driver_name(self, obj):
         return obj.driver.username if obj.driver else None
