@@ -42,19 +42,24 @@ class AuthViewSet(viewsets.GenericViewSet):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
-    def login(self, request):
-        serializer = LoginSerializer(data=request.data)
-        print(serializer,"sssss")
-        if serializer.is_valid():
-            user = authenticate(email=serializer.validated_data['email'], password=serializer.validated_data['password'])
-            print(user,"usesrrr")
+    @action(detail=False, methods=['post']) 
+    def login(self, request): 
+        serializer = LoginSerializer(data=request.data) 
+        if serializer.is_valid(): 
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            
+            # Use the email backend
+            user = authenticate(request, email=email, password=password)
+            
+            print(f"Created user with hashed password: {user}...")  # Print first 20 chars of hash
+
             if user:
                 refresh = RefreshToken.for_user(user)
-                return Response({
-                    'user': UserSerializer(user).data,
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
+                return Response({ 
+                    'user': UserSerializer(user).data, 
+                    'refresh': str(refresh), 
+                    'access': str(refresh.access_token), 
                 })
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

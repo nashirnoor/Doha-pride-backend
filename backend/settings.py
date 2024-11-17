@@ -109,7 +109,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # }
 
 DATABASES = {
-    "default": dj_database_url.parse('postgresql://doha_pride_user:BClCmdTDO3qU4iVA7p4WgeJQIZfJbaJE@dpg-cs75q5a3esus73cgrlog-a.singapore-postgres.render.com/doha_pride')
+    "default": dj_database_url.parse('postgresql://dohapride_db_user:JAtin59kURtIqPiPXT7VhUXUG5vWCUvm@dpg-cssnbhbtq21c73a2uk80-a.singapore-postgres.render.com/dohapride_db')
 }
 import os
 from urllib.parse import urlparse
@@ -202,6 +202,10 @@ CORS_ALLOW_HEADERS = ['*']
 # ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+AUTHENTICATION_BACKENDS = [
+    'driver.authentication.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

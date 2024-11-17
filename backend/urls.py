@@ -58,7 +58,7 @@ urlpatterns = [
     path('',include('chat.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('admin', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
     # urls.py
     path('tour-currency-stats/', BookingCurrencyStatsView.as_view(), name='tour-currency-stats'),
