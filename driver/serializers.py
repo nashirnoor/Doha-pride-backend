@@ -24,8 +24,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password','user_type']
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = User.objects.create_user(password=password,**validated_data)
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            password=validated_data['password'],
+            user_type=validated_data['user_type']
+        )
         return user
 
 class LoginSerializer(serializers.Serializer):

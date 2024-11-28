@@ -10,10 +10,7 @@ class TourImage(models.Model):
         return self.alt_text if self.alt_text else "Tour Image"
 
 
-from django.db import models
-
 class ToursAndActivities(models.Model):
-    # Define choices for category
     CATEGORY_CHOICES = [
         ('Food & Drink', 'Food & Drink'),
         ('Sport', 'Sport'),
@@ -26,7 +23,6 @@ class ToursAndActivities(models.Model):
         ('Adventure Nature', 'Adventure Nature'),
     ]
     
-    # Define choices for duration
     DURATION_CHOICES = [
         ('1 hr', '1 hr'),
         ('2 hr', '2 hr'),

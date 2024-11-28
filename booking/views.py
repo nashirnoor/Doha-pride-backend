@@ -21,6 +21,11 @@ from django.db.models import Q
 from django.utils import timezone
 from django.db.models import F, Value, Case, When, IntegerField
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -28,36 +33,48 @@ class BookingViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = TourBooking.objects.all()
     serializer_class = BookingSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         today = timezone.now().date()
         current_time = timezone.now().time()
         
         queryset = TourBooking.objects.annotate(
-            # Calculate the difference in days
             date_diff=F('date') - today,
-            # Priority for pending status
             status_priority=Case(
                 When(status='pending', then=Value(0)),
                 default=Value(1),
                 output_field=IntegerField(),
             ),
-            # Priority for today's bookings
             is_today=Case(
                 When(date=today, then=Value(0)),
                 default=Value(1),
                 output_field=IntegerField(),
             )
         ).order_by(
-            # First sort by status (pending first)
             'status_priority',
-            # Then sort by whether it's today
             'is_today',
-            # Then sort by date
             'date',
-            # For same dates, sort by time
             'time'
         )
+
+        search_query = self.request.query_params.get('search', '')
+        search_by = self.request.query_params.get('search_by', 'id')
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+
+        if search_query:
+            if search_by == 'id':
+                queryset = queryset.filter(unique_code__icontains=search_query)
+            elif search_by == 'status':
+                queryset = queryset.filter(status__icontains=search_query)
+            elif search_by == 'hotel':
+                queryset = queryset.filter(hotel_name__icontains=search_query)
+            elif search_by == 'name':
+                queryset = queryset.filter(name__icontains=search_query)
+
+        if from_date and to_date:
+            queryset = queryset.filter(date__range=[from_date, to_date])
         
         return queryset
 
@@ -79,75 +96,56 @@ class BookingViewSet(viewsets.ModelViewSet):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BookingTransferViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [AllowAny]  
+    permission_classes = [IsAuthenticated]
+    queryset = TransferBooking.objects.all()
     serializer_class = TransferBookingSerializer
+    pagination_class = StandardResultsSetPagination
 
-    def get_queryset(self):
-        today = timezone.now().date()
-        current_time = timezone.now().time()
-        user_email = self.request.query_params.get('email', None)
-        
-        queryset = TransferBooking.objects.annotate(
-            # Calculate the difference in days
-            date_diff=F('date') - today,
-            status_priority=Case(
-                When(status='pending', then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            ),
-            # Priority for today's bookings
-            is_today=Case(
-                When(date=today, then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            )
-        ).order_by(
-            # First sort by status (pending first)
-            'status_priority',
-            # Then sort by whether it's today
-            'is_today',
-            # Then sort by date
-            'date',
-            # For same dates, sort by time
-            'time'
-        )
-
-        # Apply email filter if provided
-        if user_email:
-            queryset = queryset.filter(email=user_email)
-            
-        return queryset
     
-
     def get_queryset(self):
         today = timezone.now().date()
         current_time = timezone.now().time()
         
         queryset = TransferBooking.objects.annotate(
-            # Calculate the difference in days
             date_diff=F('date') - today,
             status_priority=Case(
                 When(status='pending', then=Value(0)),
                 default=Value(1),
                 output_field=IntegerField(),
             ),
-            # Priority for today's bookings
             is_today=Case(
                 When(date=today, then=Value(0)),
                 default=Value(1),
                 output_field=IntegerField(),
             )
         ).order_by(
-            # First sort by status (pending first)
             'status_priority',
-            # Then sort by whether it's today
             'is_today',
-            # Then sort by date
             'date',
-            # For same dates, sort by time
             'time'
         )
+
+        # Get search parameters from request
+        search_query = self.request.query_params.get('search', '')
+        search_by = self.request.query_params.get('search_by', 'id')
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+
+        # Apply filters based on search parameters
+        if search_query:
+            if search_by == 'id':
+                queryset = queryset.filter(unique_code__icontains=search_query)
+            elif search_by == 'status':
+                queryset = queryset.filter(status__icontains=search_query)
+            elif search_by == 'hotel':
+                queryset = queryset.filter(hotel_name__icontains=search_query)
+            elif search_by == 'name':
+                queryset = queryset.filter(name__icontains=search_query)
+
+        # Apply date range filter
+        if from_date and to_date:
+            queryset = queryset.filter(date__range=[from_date, to_date])
+        
         return queryset
     
     def perform_create(self, serializer):
@@ -210,13 +208,6 @@ class BookingTransferViewSet(viewsets.ModelViewSet):
     
 
 
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 15
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-# views.py
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q

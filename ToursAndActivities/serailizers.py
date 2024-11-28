@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import ToursAndActivities, TourImage, TopActivities
-from django.utils import timezone
 
 
 class TourImageSerializer(serializers.ModelSerializer):
@@ -19,16 +18,11 @@ class ToursAndActivitiesSerializer(serializers.ModelSerializer):
         ]
     
     
-
 class TopActivitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopActivities
         fields = ['id', 'name', 'description', 'image']
 
-
-
-# serializers.py
-from rest_framework import serializers
 
 class TourBookingSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)

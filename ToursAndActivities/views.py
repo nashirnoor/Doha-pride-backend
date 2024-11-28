@@ -1,7 +1,12 @@
 from rest_framework import generics
 from .models import ToursAndActivities,TopActivities
-from .serailizers import ToursAndActivitiesSerializer,TopActivitiesSerializer
+from .serailizers import ToursAndActivitiesSerializer,TopActivitiesSerializer,TourBookingSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from django.core.mail import send_mail
+import logging
 
 class ToursAndActivitiesDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
@@ -23,16 +28,6 @@ class TopActivitiesListView(generics.ListCreateAPIView):
     queryset = TopActivities.objects.all()
     serializer_class = TopActivitiesSerializer
 
-
-
-
-# views.py
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
-from django.core.mail import send_mail
-from .serailizers import TourBookingSerializer
-import logging
 
 logger = logging.getLogger(__name__)
 

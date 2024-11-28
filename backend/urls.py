@@ -64,7 +64,6 @@ urlpatterns = [
     path('tour-currency-stats/', BookingCurrencyStatsView.as_view(), name='tour-currency-stats'),
     path('agency-dashboard-stats/', get_agency_dashboard_stats, name='booking-counts-agency'),
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
-    # path('transfer-meet-assist/<int:pk>/', views.TransferMeetAssistDetail.as_view(), name='transfer-meet-assist-detail'),
     path('contact/',  ContactView.as_view(), name='contact'),
     path('statistics/', StatisticListCreateAPIView.as_view(), name='statistic-list'),
     path('activities/', ActivityListCreateAPIView.as_view(), name='activity-list'),
