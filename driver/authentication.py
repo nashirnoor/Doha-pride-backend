@@ -6,9 +6,13 @@ class EmailBackend(ModelBackend):
         UserModel = get_user_model()
         try:
             user = UserModel.objects.get(email=email)
-            print(f"Found user: {user.email}")
+            
+            # Verify the password is hashed
+            if not user.password.startswith('pbkdf2_sha256$'):
+                print("WARNING: Unhashed password detected!")
+                return None
+            
             if user.check_password(password):
-                print("Password check passed")
                 return user
             else:
                 print("Password check failed")

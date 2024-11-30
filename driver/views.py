@@ -21,7 +21,6 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework_simplejwt.authentication import JWTAuthentication
 logger = logging.getLogger(__name__)
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.decorators import parser_classes
 
 User = get_user_model()
 
@@ -44,25 +43,29 @@ class AuthViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['post']) 
     def login(self, request): 
-        serializer = LoginSerializer(data=request.data) 
-        if serializer.is_valid(): 
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
+            serializer = LoginSerializer(data=request.data) 
+            if serializer.is_valid(): 
+                email = serializer.validated_data['email']
+                password = serializer.validated_data['password']
+                
+                # Explicit authentication attempt
+                user = authenticate(request, email=email, password=password)
+                
+                if user is not None:
+                    refresh = RefreshToken.for_user(user)
+                    return Response({ 
+                        'user': UserSerializer(user).data, 
+                        'refresh': str(refresh), 
+                        'access': str(refresh.access_token), 
+                    })
+                else:
+                    # More specific error response
+                    return Response({
+                        'error': 'Authentication failed', 
+                        'details': 'Invalid email or password'
+                    }, status=status.HTTP_401_UNAUTHORIZED)
             
-            # Use the email backend
-            user = authenticate(request, email=email, password=password)
-            
-            print(f"Created user with hashed password: {user}...")  # Print first 20 chars of hash
-
-            if user:
-                refresh = RefreshToken.for_user(user)
-                return Response({ 
-                    'user': UserSerializer(user).data, 
-                    'refresh': str(refresh), 
-                    'access': str(refresh.access_token), 
-                })
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
