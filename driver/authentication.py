@@ -10,6 +10,7 @@ class EmailBackend(ModelBackend):
             # Verify the password is hashed
             if not user.password.startswith('pbkdf2_sha256$'):
                 print("WARNING: Unhashed password detected!")
+                print("this is unhasssheeddddddddd")
                 return None
             
             if user.check_password(password):
