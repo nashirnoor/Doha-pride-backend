@@ -59,7 +59,6 @@ class AuthViewSet(viewsets.GenericViewSet):
                         'access': str(refresh.access_token), 
                     })
                 else:
-                    # More specific error response
                     return Response({
                         'error': 'Authentication failed', 
                         'details': 'Invalid email or password'
