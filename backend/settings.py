@@ -201,7 +201,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://dohapride.helloanas.com",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 AUTHENTICATION_BACKENDS = [
     'driver.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
