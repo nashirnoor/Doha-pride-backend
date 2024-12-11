@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.db.models import F, Value, Case, When, IntegerField
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 3
+    page_size = 35
     page_size_query_param = 'page_size'
     max_page_size = 100
 

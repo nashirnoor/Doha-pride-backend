@@ -14,7 +14,7 @@ from django.utils.decorators import method_decorator
 class ContactView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
-        contact = Contact.objects.first()  # Assuming you have only one contact entry
+        contact = Contact.objects.first()  
         if contact:
             serializer = ContactSerializer(contact)
             return Response(serializer.data)
@@ -28,25 +28,37 @@ class ContactView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.permissions import AllowAny
-from .models import ContactMessage
-from .serializers import ContactMessageSerializer
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
-class ContactMessageViewSet(viewsets.ModelViewSet):
-    queryset = ContactMessage.objects.all().order_by('-created_at')
-    serializer_class = ContactMessageSerializer
+@method_decorator(csrf_exempt, name='dispatch')
+class ContactMessageView(APIView):
     permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return ContactMessage.objects.all().order_by('-created_at')
     
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
-    # def get_permissions(self):
-    #     if self.action == 'create':
-    #         return [AllowAny()]
-    #     return super().get_permissions()
+    def post(self, request):
+        serializer = ContactMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        contact_messages = ContactMessage.objects.all().order_by('-created_at')        
+        serializer = ContactMessageSerializer(contact_messages, many=True)        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, pk):
+        try:
+            contact_message = ContactMessage.objects.get(pk=pk)
+        except ContactMessage.DoesNotExist:
+            return Response({"error": "Contact message not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ContactMessageSerializer(contact_message, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

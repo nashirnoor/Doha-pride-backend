@@ -40,7 +40,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'cloudinary',
     'cloudinary_storage',
+    'chat.apps.ChatConfig',
     'app',
     'contact',
     'about',
@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'home',
     'booking',
     'driver',
-    'chat'
+    'chatapp',
 ]
 
 MIDDLEWARE = [
@@ -112,30 +112,9 @@ DATABASES = {
     "default": dj_database_url.parse('postgresql://dohapride_db_user:JAtin59kURtIqPiPXT7VhUXUG5vWCUvm@dpg-cssnbhbtq21c73a2uk80-a.singapore-postgres.render.com/dohapride_db')
 }
 import os
-from urllib.parse import urlparse
 
-# Get Redis URL from environment variable
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://red-cs7q5uo8fa8c73cleufg:6379')
 
-# Parse the Redis URL
-redis_url = urlparse(REDIS_URL)
 
-ASGI_APPLICATION = 'backend.asgi.application'
-
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             'hosts': [f'{REDIS_URL}'],  # Use the complete Redis URL
-#         },
-#     }
-# }
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
 
 # DATABASES = {
 #     'default': {
@@ -206,6 +185,7 @@ AUTHENTICATION_BACKENDS = [
     'driver.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

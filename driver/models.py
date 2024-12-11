@@ -23,10 +23,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
     
-    # def save(self, *args, **kwargs):
-    #     if self.pk is None or not self.password.startswith('pbkdf2_sha256$'):
-    #         self.password = make_password(self.password)
-    #     super().save(*args, **kwargs)
 
 class Banner(models.Model):
     title = models.CharField(max_length=200, null=True, blank=True)

@@ -1,42 +1,23 @@
-from django.db import models
-from django.contrib.auth import get_user_model
+# from django.db import models
+# from django.conf import settings
 
-User = get_user_model()
+# class ChatMessage(models.Model):
+#     sender = models.ForeignKey(
+#         settings.AUTH_USER_MODEL, 
+#         on_delete=models.CASCADE, 
+#         related_name='sent_messages'
+#     )
+#     receiver = models.ForeignKey(
+#         settings.AUTH_USER_MODEL, 
+#         on_delete=models.CASCADE, 
+#         related_name='received_messages'
+#     )
+#     message = models.TextField()
+#     timestamp = models.DateTimeField(auto_now_add=True)
+#     is_read = models.BooleanField(default=False)
 
-class ChatRoom(models.Model):
-    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_chats')
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer_chats')
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin_chats', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+#     class Meta:
+#         ordering = ['timestamp']
 
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                check=(
-                    models.Q(customer__isnull=False, admin__isnull=True) |
-                    models.Q(customer__isnull=True, admin__isnull=False)
-                ),
-                name='either_customer_or_admin'
-            )
-        ]
-
-class Message(models.Model):
-    CONTENT_TYPES = (
-        ('text', 'Text'),
-        ('image', 'Image'),
-    )
-    STATUS_CHOICES = (
-        ('read', 'Read'),
-        ('unread', 'Unread'),
-    )
-
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
-    content_type = models.CharField(max_length=5, choices=CONTENT_TYPES, default='text')
-    content = models.TextField()
-    sub_content = models.JSONField(null=True, blank=True)
-    is_reply = models.BooleanField(default=False)
-    replied_message = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
-    status = models.CharField(max_length=6, choices=STATUS_CHOICES, default='unread')
-    created_at = models.DateTimeField(auto_now_add=True)
+#     def __str__(self):
+#         return f"Message from {self.sender.username} to {self.receiver.username}"

@@ -21,7 +21,8 @@ from booking.views import BookingViewSet,BookingTransferViewSet,TransferBookingA
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
-from contact.views import ContactView,ContactMessageViewSet
+from chatapp.views import ChatAPIView, UnreadMessagesView
+from contact.views import ContactView,ContactMessageView
 from booking.views import CategoryListView,TravelAgencyTransferBookingsViewSet,TravelAgencyTourBookingsViewSet,TourBookingAuditViewSet,get_agency_dashboard_stats,TransferBookingAuditViewSetDashboard,TourBookingAuditViewSetDashboard
 from ToursAndActivities.views import ToursAndActivitiesDetailView,ToursListView,TopActivitiesListView,TourBookingView
 from about.views import StatisticListCreateAPIView,ActivityListCreateAPIView,DescriptionDetailView
@@ -41,11 +42,8 @@ router.register('driver-feedback', DriverFeedbackViewSet)
 router.register('transfer-audit', TransferBookingAuditViewSet,basename='transfer-audit')
 router.register('transfer-audit-dashboard', TransferBookingAuditViewSetDashboard,basename='transfer-audit-dashboard')
 router.register('tour-audit-dashboard', TourBookingAuditViewSetDashboard,basename='tour-audit-dashboard')
-
-
 router.register('tour-audit', TourBookingAuditViewSet)
-router.register(r'contact-messages', ContactMessageViewSet, basename='contact-messages')
-
+# router.register(r'contact-messages', ContactMessageViewSet, basename='contact-messages')
 router.register('driver-profile',DriverProfile,basename='driver-profile')
 router.register(r'travel-agency-transfer', TravelAgencyTransferBookingsViewSet, basename='travel-agency-transfer')
 router.register(r'travel-agency-tour', TravelAgencyTourBookingsViewSet, basename='travel-agency-tour')
@@ -55,12 +53,15 @@ router.register(r'travel-agency-tour', TravelAgencyTourBookingsViewSet, basename
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('',include('chat.urls')),
+    path('chat/', ChatAPIView.as_view(), name='chat'),
+    path('unread-messages/', UnreadMessagesView.as_view(), name='unread-messages'),
+    path('contact-messages/', ContactMessageView.as_view(), name='contact-messages'),
+    path('contact-messages/<int:pk>/', ContactMessageView.as_view(), name='contact-messages-detail'),
+    # path('',include('chat.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/', admin.site.urls),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='booking-counts'),
-    # urls.py
     path('tour-currency-stats/', BookingCurrencyStatsView.as_view(), name='tour-currency-stats'),
     path('agency-dashboard-stats/', get_agency_dashboard_stats, name='booking-counts-agency'),
     path('transfer-meet-assist/', views.TransferMeetAssistList.as_view(), name='transfer-meet-assist-list'),
@@ -74,7 +75,6 @@ urlpatterns = [
     path('tour-booking/', TourBookingView.as_view(), name='tour-booking'),
     path('api/hotel-categories/', CategoryListView.as_view(), name='category-list'),
     path('api/banners-home/', views.HomeBannerListView.as_view(), name='banner-home'),
-
 
 
 ]

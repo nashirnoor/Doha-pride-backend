@@ -1,49 +1,63 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-from .models import ChatRoom, Message
-from .serializers import ChatRoomSerializer, MessageSerializer
-from django.db import models
-from django.db.models import Q 
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework import status
+# from .models import ChatMessage
+# from .serializers import ChatMessageSerializer
+# from django.db.models import Q
 
-class ChatRoomListCreateView(generics.ListCreateAPIView):
-    serializer_class = ChatRoomSerializer
-    permission_classes = [IsAuthenticated]
+# class ChatAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.user_type == 'driver':
-            return ChatRoom.objects.filter(driver=user)
-        return ChatRoom.objects.filter(customer=user)
+#     def get(self, request):
+#         # Get chat partner's user ID from query params
+#         partner_id = request.query_params.get('partner_id')
+        
+#         if not partner_id:
+#             return Response(
+#                 {"error": "Partner ID is required"}, 
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
 
-class MessageListCreateView(generics.ListCreateAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
+#         # Fetch messages between current user and partner
+#         messages = ChatMessage.objects.filter(
+#             Q(sender=request.user, receiver_id=partner_id) | 
+#             Q(sender_id=partner_id, receiver=request.user)
+#         ).order_by('timestamp')
 
-    def get_queryset(self):
-        user = self.request.user
-        return Message.objects.filter(
-            models.Q(sender=user) | models.Q(receiver=user)
-        ).order_by('-created_at')
+#         serializer = ChatMessageSerializer(messages, many=True)
+#         return Response(serializer.data)
 
-class ChatRoomMessagesView(generics.ListAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         # Send a new message
+#         data = request.data.copy()
+#         data['sender'] = request.user.id
+        
+#         serializer = ChatMessageSerializer(data=data)
+#         if serializer.is_valid():
+#             serializer.save(sender=request.user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        other_user_id = self.kwargs['pk']  
-        current_user = self.request.user
+# class UnreadMessagesView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-        chat_room = ChatRoom.objects.filter(
-            (Q(driver=current_user) & Q(customer_id=other_user_id)) |
-            (Q(customer=current_user) & Q(driver_id=other_user_id))
-        ).first()
-
-        if chat_room:
-            Message.objects.filter(
-                chat_room=chat_room,
-                receiver=current_user,
-                status='unread'
-            ).update(status='read')
-            
-            return Message.objects.filter(chat_room=chat_room).order_by('created_at')
-        return Message.objects.none()
+#     def get(self, request):
+#         # Get unread messages count for each chat partner
+#         partner_id = request.query_params.get('partner_id')
+        
+#         if partner_id:
+#             unread_count = ChatMessage.objects.filter(
+#                 receiver=request.user, 
+#                 sender_id=partner_id, 
+#                 is_read=False
+#             ).count()
+#         else:
+#             # If no partner specified, get total unread messages
+#             unread_count = ChatMessage.objects.filter(
+#                 receiver=request.user, 
+#                 is_read=False
+#             ).count()
+        
+#         return Response({"unread_count": unread_count})
