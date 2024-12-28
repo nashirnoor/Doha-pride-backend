@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'cloudinary',
     'cloudinary_storage',
-    'chat.apps.ChatConfig',
     'app',
     'contact',
     'about',
@@ -101,16 +100,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
-    "default": dj_database_url.parse('postgresql://dohapride_db_user:JAtin59kURtIqPiPXT7VhUXUG5vWCUvm@dpg-cssnbhbtq21c73a2uk80-a.singapore-postgres.render.com/dohapride_db')
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+# DATABASES = {
+#     "default": dj_database_url.parse('postgresql://dohapride_db_user:JAtin59kURtIqPiPXT7VhUXUG5vWCUvm@dpg-cssnbhbtq21c73a2uk80-a.singapore-postgres.render.com/dohapride_db')
+# }
 import os
 
 
