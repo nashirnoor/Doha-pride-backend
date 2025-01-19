@@ -243,6 +243,12 @@ CSRF_TRUSTED_ORIGINS = [
     "https://dohapride.helloanas.com" 
 ]
 
+CSRF_ALLOWED_ORIGINS = [
+    "https://doha-pride-backend-2.onrender.com",
+    "http://localhost:5173", 
+    "https://dohapride.helloanas.com" 
+]
+
 
 
 CSRF_COOKIE_SECURE = False
