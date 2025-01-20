@@ -10,8 +10,6 @@ from django.utils.decorators import method_decorator
 from rest_framework.response import Response
 
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class ContactView(APIView):
     permission_classes = [AllowAny]
