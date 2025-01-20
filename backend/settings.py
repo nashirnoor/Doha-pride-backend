@@ -284,3 +284,7 @@ DEFAULT_FROM_EMAIL = 'nashirnoor2002@gmail.com'
 AUTH_USER_MODEL = 'driver.User'
 
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+
